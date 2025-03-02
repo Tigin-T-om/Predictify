@@ -9,9 +9,16 @@
 <body>
     <div class="container">
         <h2>Steps to Calories Burned Predictor</h2>
+        
+        <!-- Display Model Accuracy -->
+        <p><strong>Model Accuracy (R² Score):</strong> <span id="accuracy">{{ accuracy }}</span></p>
+
+
+
         <label for="steps">Enter Steps:</label>
         <input type="number" id="steps" placeholder="Enter steps count">
         <button onclick="predictCalories()">Predict</button>
+
         <h3 id="result"></h3>
     </div>
 

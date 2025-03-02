@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 import joblib
 
 # Load Dataset
-dataset = pd.read_csv('D:\projects\SLR\SLR_Calories_Prediction\steps_calories.csv')
+dataset = pd.read_csv("F:\projects\SLR\SLR_Calories_Prediction\steps_calories.csv")
 X = dataset.iloc[:, 0:1].values
 y = dataset.iloc[:, 1:2].values
 
