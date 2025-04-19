@@ -41,7 +41,7 @@
                         <i class="fas fa-heartbeat"></i>
                         <span>Diabetes</span>
                     </button>
-                    <button class="model-tab" data-form="fruitForm">
+                    <button class="model-tab" data-form="fruitFormContainer">
                         <i class="fas fa-apple-alt"></i>
                         <span>Fruit</span>
                     </button>
@@ -58,7 +58,7 @@
                 <div class="prediction-form active" id="houseForm">
                     <div class="card">
                         <div class="card-body">
-                            <h3>House Price Prediction</h3>
+                            <h3>House Price Prediction (Simple Linear Regression)</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ house_accuracy }}
                             </div>
@@ -82,7 +82,7 @@
                 <div class="prediction-form" id="salaryForm">
                     <div class="card">
                         <div class="card-body">
-                            <h3>Employee Salary Prediction</h3>
+                            <h3>Employee Salary Prediction (Multiple Linear Regression)</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ salary_accuracy }}
                             </div>
@@ -114,7 +114,7 @@
                 <div class="prediction-form" id="diabetesForm">
                     <div class="card">
                         <div class="card-body">
-                            <h3>Diabetes Risk Prediction</h3>
+                            <h3>Diabetes Risk Prediction (Logistic Regression)</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ diabetes_accuracy }}
                             </div>
@@ -149,10 +149,10 @@
                 </div>
 
                 <!-- Fruit Form -->
-                <div class="prediction-form" id="fruitForm">
+                <div class="prediction-form" id="fruitFormContainer">
                     <div class="card">
                         <div class="card-body">
-                            <h3>Fruit Classification</h3>
+                            <h3>Fruit Classification (K-Nearest Neighbors Regression)</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ fruit_accuracy }}
                             </div>
@@ -176,34 +176,36 @@
                                     <i class="fas fa-apple-alt"></i> Classify Fruit
                                 </button>
                             </form>
-                            <div id="fruitResult" class="result-section" style="display: none;">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Fruit Classification Result</h5>
-                                        <div class="alert alert-success">
-                                            <h4 class="mb-0">Predicted Fruit: <span id="fruitPrediction"></span></h4>
-                                            <p class="mb-0">Confidence: <span id="fruitConfidence"></span>%</p>
-                                        </div>
-                                        <div class="mt-3">
-                                            <h6>Top Predictions:</h6>
-                                            <ul class="list-group" id="topPredictions">
-                                            </ul>
-                                        </div>
-                                        <div class="mt-3">
-                                            <small class="text-muted">Model Accuracy: <span id="fruitAccuracy"></span>%</small>
+                            <div id="fruitResult" class="result-section d-none">
+                                <div class="result-content">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Fruit Classification Result</h5>
+                                            <div class="alert alert-success">
+                                                <h4 class="mb-0">Predicted Fruit: <span id="fruitPrediction"></span></h4>
+                                                <p class="mb-0">Confidence: <span id="fruitConfidence"></span>%</p>
+                                            </div>
+                                            <div class="mt-3">
+                                                <h6>Top Predictions:</h6>
+                                                <ul class="list-group" id="topPredictions">
+                                                </ul>
+                                            </div>
+                                            <div class="mt-3">
+                                                <small class="text-muted">Model Accuracy: <span id="fruitAccuracy"></span>%</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-    </div>
+                </div>
 
                 <!-- Temperature Form -->
                 <div class="prediction-form" id="temperatureForm">
                     <div class="card">
                         <div class="card-body">
-                            <h3>Temperature Prediction</h3>
+                            <h3>Temperature Prediction (Polynomial Regression)</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ temp_accuracy }}
                             </div>
@@ -232,27 +234,8 @@
                                     <i class="fas fa-thermometer-half"></i> Predict Temperature
                                 </button>
                             </form>
-                            <div id="temperatureResult" class="result-section" style="display: none;">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Temperature Prediction Result</h5>
-                                        <div class="alert alert-success">
-                                            <h4 class="mb-0">Predicted Temperature: <span id="tempPrediction"></span>°C</h4>
-                                        </div>
-                                        <div class="mt-3">
-                                            <p>Input Parameters:</p>
-                                            <ul class="list-group">
-                                                <li class="list-group-item">Day: <span id="tempDay"></span></li>
-                                                <li class="list-group-item">Humidity: <span id="tempHumidity"></span>%</li>
-                                                <li class="list-group-item">Wind Speed: <span id="tempWindSpeed"></span> km/h</li>
-                                                <li class="list-group-item">Pressure: <span id="tempPressure"></span> hPa</li>
-                                            </ul>
-                                        </div>
-                                        <div class="mt-3">
-                                            <small class="text-muted">Model Accuracy: <span id="tempAccuracy"></span>%</small>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div id="temperatureResult" class="result-section d-none">
+                                <div class="result-content"></div>
                             </div>
                         </div>
                     </div>

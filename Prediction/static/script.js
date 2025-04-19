@@ -146,6 +146,22 @@ function validateForm(form) {
                 }
             }
 
+            // Special validation for fruit classification
+            if (form.id === 'fruitForm') {
+                if (input.id === 'weight' && value <= 0) {
+                    showError(input, 'Weight must be greater than 0');
+                    isValid = false;
+                }
+                if (input.id === 'size' && value <= 0) {
+                    showError(input, 'Size must be greater than 0');
+                    isValid = false;
+                }
+                if (input.id === 'color_score' && (value < 0 || value > 1)) {
+                    showError(input, 'Color score must be between 0 and 1');
+                    isValid = false;
+                }
+            }
+
             if (isNaN(value) || (min !== undefined && value < min) || (max !== undefined && value > max)) {
                 showError(input, `Please enter a number between ${min} and ${max}`);
                 isValid = false;
@@ -176,6 +192,27 @@ function createErrorFeedback(formGroup) {
 // Results Display
 function displayResults(formId, result) {
     console.log('Displaying results for form:', formId); // Debug log
+    
+    // For the fruit form, we need to handle it specially
+    if (formId === 'fruitForm') {
+        const resultSection = document.getElementById('fruitResult');
+        if (!resultSection) {
+            console.error('Result section not found for form:', formId);
+            return;
+        }
+        
+        const resultContent = resultSection.querySelector('.result-content');
+        if (!resultContent) {
+            console.error('Result content not found for form:', formId);
+            return;
+        }
+        
+        displayFruitResult(resultContent, result);
+        resultSection.classList.remove('d-none');
+        return;
+    }
+    
+    // Handle other forms
     const resultSection = document.querySelector(`#${formId.replace('Form', 'Result')}`);
     if (!resultSection) {
         console.error('Result section not found for form:', formId); // Debug log
@@ -202,11 +239,8 @@ function displayResults(formId, result) {
         case 'diabetesForm':
             displayDiabetesResult(resultContent, result);
             break;
-        case 'fruitForm':
-            displayFruitResult(resultContent, result);
-            break;
         case 'temperatureForm':
-            displayTemperatureResult(result);
+            displayTemperatureResult(resultContent, result);
             break;
         default:
             console.error('Unknown form ID:', formId); // Debug log
@@ -281,45 +315,55 @@ function displayDiabetesResult(container, result) {
 
 function displayFruitResult(container, result) {
     container.innerHTML = `
-        <div class="alert alert-success">
-            <h4 class="alert-heading">Predicted Fruit</h4>
-            <p class="mb-0">${result.prediction}</p>
-        </div>
-        <div class="alert alert-info">
-            <h4 class="alert-heading">Confidence</h4>
-            <p class="mb-0">${(result.confidence * 100).toFixed(2)}%</p>
-        </div>
-        <div class="mt-3">
-            <h6>Top Predictions:</h6>
-            <ul class="list-group">
-                ${result.top_predictions.map(pred => `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        ${pred.fruit}
-                        <span class="badge bg-primary rounded-pill">${(pred.probability * 100).toFixed(2)}%</span>
-                    </li>
-                `).join('')}
-            </ul>
-        </div>
-        <div class="alert alert-info mt-3">
-            <h4 class="alert-heading">Model Accuracy</h4>
-            <p class="mb-0">${result.model_accuracy}%</p>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Fruit Classification Result</h5>
+                <div class="alert alert-success">
+                    <h4 class="mb-0">Predicted Fruit: ${result.prediction}</h4>
+                    <p class="mb-0">Confidence: ${(result.confidence * 100).toFixed(2)}%</p>
+                </div>
+                <div class="mt-3">
+                    <h6>Top Predictions:</h6>
+                    <ul class="list-group">
+                        ${result.top_predictions.map(pred => `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                ${pred.fruit}
+                                <span class="badge bg-primary rounded-pill">${(pred.probability * 100).toFixed(2)}%</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Model Accuracy: ${result.model_accuracy}%</small>
+                </div>
+            </div>
         </div>
     `;
 }
 
-function displayTemperatureResult(result) {
-    const resultSection = document.getElementById('temperatureResult');
-    
-    // Update result values
-    document.getElementById('tempPrediction').textContent = result.prediction.toFixed(1);
-    document.getElementById('tempDay').textContent = result.day;
-    document.getElementById('tempHumidity').textContent = result.humidity.toFixed(1);
-    document.getElementById('tempWindSpeed').textContent = result.wind_speed.toFixed(1);
-    document.getElementById('tempPressure').textContent = result.pressure.toFixed(1);
-    document.getElementById('tempAccuracy').textContent = result.model_accuracy.toFixed(1);
-    
-    // Show the result section
-    resultSection.style.display = 'block';
+function displayTemperatureResult(container, result) {
+    container.innerHTML = `
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Temperature Prediction Result</h5>
+                <div class="alert alert-success">
+                    <h4 class="mb-0">Predicted Temperature: ${result.prediction.toFixed(1)}°C</h4>
+                </div>
+                <div class="mt-3">
+                    <p>Input Parameters:</p>
+                    <ul class="list-group">
+                        <li class="list-group-item">Day: ${result.day}</li>
+                        <li class="list-group-item">Humidity: ${result.humidity.toFixed(1)}%</li>
+                        <li class="list-group-item">Wind Speed: ${result.wind_speed.toFixed(1)} km/h</li>
+                        <li class="list-group-item">Pressure: ${result.pressure.toFixed(1)} hPa</li>
+                    </ul>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Model Accuracy: ${result.model_accuracy.toFixed(1)}%</small>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // Reset Functions
@@ -350,123 +394,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Initial form not found');
     }
-});
-
-// Fruit Classification Form Handler
-document.getElementById('fruitForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const weight = parseFloat(document.getElementById('weight').value);
-    const size = parseFloat(document.getElementById('size').value);
-    const colorScore = parseFloat(document.getElementById('color_score').value);
-    
-    // Validate inputs
-    if (weight <= 0 || size <= 0 || colorScore < 0 || colorScore > 1) {
-        showError('Please enter valid values for weight, size, and color score.');
-        return;
-    }
-    
-    // Show loading state
-    document.getElementById('fruitResult').style.display = 'none';
-    showLoading('fruitResult');
-    
-    // Make API request
-    fetch('/predict_fruit', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            weight: weight,
-            size: size,
-            color_score: colorScore
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            showError(data.error);
-            return;
-        }
-        
-        // Update results
-        document.getElementById('fruitPrediction').textContent = data.prediction;
-        document.getElementById('fruitConfidence').textContent = (data.confidence * 100).toFixed(2);
-        document.getElementById('fruitAccuracy').textContent = data.model_accuracy;
-        
-        // Update top predictions
-        const topPredictionsList = document.getElementById('topPredictions');
-        topPredictionsList.innerHTML = '';
-        data.top_predictions.forEach(pred => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML = `
-                ${pred.fruit}
-                <span class="badge bg-primary rounded-pill">${(pred.probability * 100).toFixed(2)}%</span>
-            `;
-            topPredictionsList.appendChild(li);
-        });
-        
-        // Show results
-        document.getElementById('fruitResult').style.display = 'block';
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('An error occurred while processing your request.');
-    });
-});
-
-// Temperature Prediction Form Handler
-document.getElementById('temperatureForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const day = parseFloat(document.getElementById('day').value);
-    const humidity = parseFloat(document.getElementById('humidity').value);
-    const windSpeed = parseFloat(document.getElementById('wind_speed').value);
-    const pressure = parseFloat(document.getElementById('pressure').value);
-    
-    // Validate inputs
-    if (day < 1 || day > 365 || humidity < 0 || humidity > 100 || windSpeed < 0 || pressure < 800 || pressure > 1200) {
-        showError('Please enter valid values for all parameters.');
-        return;
-    }
-    
-    // Show loading state
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="loading"></span> Predicting...';
-    
-    // Make API request
-    fetch('/predict_temperature', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            day: day,
-            humidity: humidity,
-            wind_speed: windSpeed,
-            pressure: pressure
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            showError(data.error);
-            return;
-        }
-        
-        // Display results
-        displayResults('temperatureForm', data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('An error occurred while processing your request.');
-    })
-    .finally(() => {
-        // Reset button state
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-    });
 });
