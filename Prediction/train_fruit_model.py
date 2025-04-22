@@ -1,67 +1,48 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, accuracy_score
 import joblib
 
-# Load Dataset
-dataset = pd.read_csv("fruit_dataset.csv")
-X = dataset.iloc[:, :-1].values  # Features (Weight, Size, Color Score)
-y = dataset.iloc[:, -1].values  # Labels (Fruit Type)
+# Load the dataset
+df = pd.read_csv("fruit_data.csv")  # replace with your actual file path
 
-# Handle missing values
-imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
-X = imputer.fit_transform(X)
+# Features and label
+X = df[['mass', 'width', 'height', 'color_score']]
+y = df['fruit_name']  # or use 'fruit_label' if preferred
 
-# Create and fit scaler for features
+# Encode the fruit names to numbers
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(y)
+
+# Save label classes for future reference
+fruit_classes = dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+print("Fruit classes:", fruit_classes)
+
+# Feature scaling
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Split dataset into training (70%) and testing (30%)
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
 
-# Train KNN Model
-k = 3  # Number of neighbors
-knn = KNeighborsClassifier(n_neighbors=k)
+# Train KNN model
+knn = KNeighborsClassifier(n_neighbors=3)
 knn.fit(X_train, y_train)
 
-# Save the trained model and scaler
-joblib.dump(knn, "fruit_knn_model.pkl")
-joblib.dump(scaler, "fruit_knn_scaler.pkl")
-print("Model and scaler trained and saved")
-
-# Predict Test Data
+# Predictions
 y_pred = knn.predict(X_test)
 
-# Model Accuracy
-accuracy = knn.score(X_test, y_test)
-print(f"Model Accuracy: {accuracy:.4f}")
+# Evaluation
+print("Accuracy Score:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred, target_names=label_encoder.classes_))
 
-# Plot Training Set
-plt.figure(figsize=(10, 6))
-plt.scatter(X_train[:, 0], X_train[:, 1], c=[{'Apple': 0, 'Banana': 1, 'Orange': 2}[label] for label in y_train], cmap='viridis', label="Training Data")
-plt.title("Fruit Classification (Training Set)")
-plt.xlabel("Weight")
-plt.ylabel("Size")
-plt.legend()
-plt.grid(True)
-plt.show()
+# Save model and scaler
+joblib.dump(knn, "fruit_knn_model.pkl")
+joblib.dump(scaler, "fruit_scaler.pkl")
+joblib.dump(label_encoder, "fruit_label_encoder.pkl")
 
-# Plot Test Set
-plt.figure(figsize=(10, 6))
-plt.scatter(X_test[:, 0], X_test[:, 1], c=[{'Apple': 0, 'Banana': 1, 'Orange': 2}[label] for label in y_test], cmap='viridis', label="Test Data")
-plt.title("Fruit Classification (Test Set)")
-plt.xlabel("Weight")
-plt.ylabel("Size")
-plt.legend()
-plt.grid(True)
-plt.show()
-
-# Test predictions for a sample fruit
-sample_fruit = [[150, 7, 0.8]]  # Example input
-sample_fruit_scaled = scaler.transform(sample_fruit)
-sample_pred = knn.predict(sample_fruit_scaled)[0]
-print(f"Predicted fruit type for given input: {sample_pred}")
+print("Model, scaler, and label encoder saved successfully.")

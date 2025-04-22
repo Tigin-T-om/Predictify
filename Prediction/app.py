@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import r2_score, accuracy_score
 import joblib
+from house_price_predictor import HousePricePredictor
 
 app = Flask(__name__)
 
@@ -11,14 +12,15 @@ try:
     house_model = joblib.load('house_price_model.pkl')
     house_scaler = joblib.load('house_price_scaler.pkl')
     salary_model = joblib.load('employee_salary_model.pkl')
+    salary_preprocessor = joblib.load('salary_preprocessor.pkl')
     salary_scaler = joblib.load('salary_scaler.pkl')
-    diabetes_model = joblib.load('diabetes_model.pkl')
-    diabetes_scaler = joblib.load('diabetes_scaler.pkl')
+    diabetes_model = joblib.load('diabetes_model_pipeline.pkl')
     fruit_model = joblib.load('fruit_knn_model.pkl')
-    fruit_scaler = joblib.load('fruit_knn_scaler.pkl')
-    temp_model = joblib.load('temperature_prediction_model.pkl')
-    temp_scaler = joblib.load('temperature_prediction_scaler.pkl')
-    temp_poly = joblib.load('temperature_prediction_poly.pkl')
+    fruit_scaler = joblib.load('fruit_scaler.pkl')
+    fruit_label_encoder = joblib.load('fruit_label_encoder.pkl')
+    temp_model = joblib.load('temperature_model.pkl')
+    temp_scaler = joblib.load('scaler.pkl')
+    temp_poly = joblib.load('poly_transform.pkl')
 except FileNotFoundError as e:
     print(f"Error loading model files: {str(e)}")
     print("Please ensure all model files are present in the Prediction directory")
@@ -26,41 +28,64 @@ except FileNotFoundError as e:
 
 # Calculate accuracies for available models
 try:
+    # House Price Model Accuracy
     house_data = pd.read_csv('house_prediction_slr.csv')
-    X_house = house_data.iloc[:, 0:1].values.astype(np.float64)  # Square Footage
-    y_house = house_data.iloc[:, 1:2].values.astype(np.float64)  # Price
+    house_data = house_data.dropna()  # Remove any rows with NaN values
+    X_house = house_data[['SquareFootage']].values
+    y_house = house_data[['Price']].values
     X_house_scaled = house_scaler.transform(X_house)
     house_accuracy = r2_score(y_house, house_model.predict(X_house_scaled))
 
-    salary_data = pd.read_csv('employee_salaries.csv')
-    X_salary = salary_data[['YearsExperience', 'EducationLevel', 'Certifications']].values.astype(np.float64)
-    y_salary = salary_data['Salary'].values.astype(np.float64)
-    X_salary_scaled = salary_scaler.transform(X_salary)
-    salary_accuracy = r2_score(y_salary, salary_model.predict(X_salary_scaled))
+    # Salary Model Accuracy
+    salary_data = pd.read_csv('Salary Data.csv')
+    salary_data = salary_data.dropna()  # Remove any rows with NaN values
+    X_salary = salary_data.drop(columns=['Salary'])
+    y_salary = salary_data['Salary'].values.reshape(-1, 1)
+    X_salary_processed = salary_preprocessor.transform(X_salary)
+    y_salary_scaled = salary_scaler.transform(y_salary)
+    salary_accuracy = r2_score(y_salary_scaled, salary_model.predict(X_salary_processed))
 
-    diabetes_data = pd.read_csv('diabetes_balanced_data.csv')
-    X_diabetes = diabetes_data[['Age', 'BMI', 'Glucose', 'BloodPressure']].values.astype(np.float64)
-    y_diabetes = diabetes_data['Diabetes'].values.astype(np.float64)
-    X_diabetes_scaled = diabetes_scaler.transform(X_diabetes)
-    diabetes_accuracy = r2_score(y_diabetes, diabetes_model.predict(X_diabetes_scaled))
+    # Diabetes Model Accuracy
+    diabetes_data = pd.read_csv('diabetes_prediction_dataset.csv')
+    diabetes_data = diabetes_data.dropna()  # Remove any rows with NaN values
+    X_diabetes = diabetes_data[['gender', 'age', 'hypertension', 'heart_disease',
+                               'smoking_history', 'bmi', 'HbA1c_level', 'blood_glucose_level']]
+    y_diabetes = diabetes_data['diabetes']
+    diabetes_accuracy = diabetes_model.score(X_diabetes, y_diabetes)
 
-    fruit_data = pd.read_csv('fruit_dataset.csv')
-    X_fruit = fruit_data[['Weight', 'Size', 'Color_Score']].values.astype(np.float64)
-    y_fruit = fruit_data['Label']
+    # Fruit Model Accuracy
+    fruit_data = pd.read_csv('fruit_data.csv')
+    fruit_data = fruit_data.dropna()  # Remove any rows with NaN values
+    X_fruit = fruit_data[['mass', 'width', 'height', 'color_score']]
+    y_fruit = fruit_data['fruit_name']
     X_fruit_scaled = fruit_scaler.transform(X_fruit)
-    fruit_accuracy = accuracy_score(y_fruit, fruit_model.predict(X_fruit_scaled))
+    y_fruit_encoded = fruit_label_encoder.transform(y_fruit)
+    fruit_accuracy = accuracy_score(y_fruit_encoded, fruit_model.predict(X_fruit_scaled))
 
-    # Calculate temperature model accuracy
-    temp_data = pd.read_csv('temperature_prediction_data.csv')
-    X_temp = temp_data[['Day', 'Humidity', 'Wind_Speed', 'Pressure']].values.astype(np.float64)
-    y_temp = temp_data['Temperature'].values.astype(np.float64)
+    # Temperature Model Accuracy
+    temp_data = pd.read_csv('weather_data.csv')
+    temp_data = temp_data.dropna()  # Remove any rows with NaN values
+    X_temp = temp_data.drop(columns=['temperature_c']).values
+    y_temp = temp_data[['temperature_c']].values
     X_temp_scaled = temp_scaler.transform(X_temp)
     X_temp_poly = temp_poly.transform(X_temp_scaled)
     temp_accuracy = r2_score(y_temp, temp_model.predict(X_temp_poly))
+
 except FileNotFoundError as e:
     print(f"Error loading dataset files: {str(e)}")
     print("Please ensure all dataset files are present in the Prediction directory")
     exit(1)
+except Exception as e:
+    print(f"Error calculating model accuracies: {str(e)}")
+    # Set default accuracies if calculation fails
+    house_accuracy = 0.0
+    salary_accuracy = 0.0
+    diabetes_accuracy = 0.0
+    fruit_accuracy = 0.0
+    temp_accuracy = 0.0
+
+# Initialize the house price predictor
+house_predictor = HousePricePredictor()
 
 @app.route('/')
 def home():
@@ -75,65 +100,56 @@ def home():
 def predict_house():
     try:
         data = request.get_json()
-        sqft = float(data['sqft'])
+        sqft = data.get('sqft')
         
-        # Input validation
-        if sqft <= 0:
-            return jsonify({'error': 'Square footage must be positive'}), 400
+        if sqft is None:
+            return jsonify({'error': 'Square footage is required'}), 400
             
-        # Scale input
-        X = np.array([[sqft]], dtype=np.float64)
-        X_scaled = house_scaler.transform(X)
+        # Get prediction from the predictor
+        result = house_predictor.predict(sqft)
         
-        # Make prediction
-        prediction = house_model.predict(X_scaled)[0][0]
+        if not result['input_validated']:
+            return jsonify({'error': result['error']}), 400
+            
+        # Return prediction with warning if any
+        response = {
+            'prediction': result['prediction'],
+            'accuracy': house_accuracy
+        }
         
-        return jsonify({
-            'prediction': float(prediction),
-            'accuracy': float(house_accuracy)
-        })
+        if result['warning']:
+            response['warning'] = result['warning']
+            
+        return jsonify(response)
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/predict_salary', methods=['POST'])
 def predict_salary():
     try:
         data = request.get_json()
+        age = float(data['age'])
         years_experience = float(data['years_experience'])
-        education_level = int(data['education_level'])
-        certifications = int(data['certifications'])
+        gender = data['gender']
+        education_level = data['education_level']
+        job_title = data['job_title']
         
-        # Input validation with more reasonable limits
-        if years_experience < 0 or years_experience > 40:
-            return jsonify({'error': 'Years of experience must be between 0 and 40'}), 400
-        if education_level < 1 or education_level > 5:
-            return jsonify({'error': 'Education level must be between 1 and 5'}), 400
-        if certifications < 0 or certifications > 10:
-            return jsonify({'error': 'Number of certifications must be between 0 and 10'}), 400
-            
-        # Scale inputs using reshape to avoid deprecation warning
-        X = np.array([[years_experience, education_level, certifications]], dtype=np.float64)
-        X_scaled = salary_scaler.transform(X)
+        # Create input DataFrame
+        input_data = pd.DataFrame({
+            'Age': [age],
+            'Years of Experience': [years_experience],
+            'Gender': [gender],
+            'Education Level': [education_level],
+            'Job Title': [job_title]
+        })
+        
+        # Preprocess input
+        X_processed = salary_preprocessor.transform(input_data)
         
         # Make prediction
-        prediction = salary_model.predict(X_scaled)[0]
-        
-        # Apply experience multiplier for senior levels
-        if years_experience > 10:
-            prediction *= (1 + (years_experience - 10) * 0.03)  # 3% increase per year after 10 years
-            
-        # Apply education multiplier
-        education_multiplier = {
-            1: 1.0,    # High School
-            2: 1.1,    # Bachelor's
-            3: 1.2,    # Master's
-            4: 1.3,    # PhD
-            5: 1.4     # Post-doc
-        }
-        prediction *= education_multiplier.get(education_level, 1.0)
-        
-        # Ensure minimum salary of $40,000
-        prediction = max(prediction, 40000)
+        prediction_scaled = salary_model.predict(X_processed)[0]
+        prediction = salary_scaler.inverse_transform([[prediction_scaled]])[0][0]
         
         return jsonify({
             'prediction': float(prediction),
@@ -146,59 +162,35 @@ def predict_salary():
 def predict_diabetes():
     try:
         data = request.get_json()
+        gender = data['gender']
         age = float(data['age'])
+        hypertension = int(data['hypertension'])
+        heart_disease = int(data['heart_disease'])
+        smoking_history = data['smoking_history']
         bmi = float(data['bmi'])
-        glucose = float(data['glucose'])
-        blood_pressure = float(data['blood_pressure'])
+        hba1c_level = float(data['hba1c_level'])
+        blood_glucose_level = float(data['blood_glucose_level'])
         
-        # Validate input ranges
-        if age < 0 or age > 120 or bmi < 10 or bmi > 50 or glucose < 50 or glucose > 400 or blood_pressure < 60 or blood_pressure > 200:
-            return jsonify({'error': 'Invalid input values'}), 400
+        # Create input DataFrame
+        input_data = pd.DataFrame({
+            'gender': [gender],
+            'age': [age],
+            'hypertension': [hypertension],
+            'heart_disease': [heart_disease],
+            'smoking_history': [smoking_history],
+            'bmi': [bmi],
+            'HbA1c_level': [hba1c_level],
+            'blood_glucose_level': [blood_glucose_level]
+        })
         
-        features = np.array([[age, bmi, glucose, blood_pressure]], dtype=np.float64)
-        features_scaled = diabetes_scaler.transform(features)
-        prediction = diabetes_model.predict(features_scaled)[0]
-        raw_probability = diabetes_model.predict_proba(features_scaled)[0][1] * 100
+        # Make prediction
+        prediction = diabetes_model.predict(input_data)[0]
+        probability = diabetes_model.predict_proba(input_data)[0][1] * 100
         
-        # Adjust probability based on medical guidelines
-        base_probability = raw_probability
-        
-        # Adjust based on glucose level
-        if glucose >= 140 and glucose < 200:  # Pre-diabetic range
-            base_probability = min(base_probability, 75)  # Cap at 75% for pre-diabetic
-        elif glucose >= 200:  # Diabetic range
-            base_probability = min(base_probability, 95)  # Cap at 95% for diabetic
-            
-        # Adjust based on BMI
-        if bmi >= 30:  # Obese
-            base_probability = min(base_probability + 10, 95)
-        elif bmi >= 25:  # Overweight
-            base_probability = min(base_probability + 5, 95)
-            
-        # Determine risk level based on adjusted probability and glucose level
-        if glucose >= 200:  # Diabetic range
-            risk_level = "High Risk"
-        elif glucose >= 140:  # Pre-diabetic range
-            if base_probability >= 65:
-                risk_level = "High Risk"
-            else:
-                risk_level = "Moderate Risk"
-        else:
-            if base_probability < 40:
-                risk_level = "Low Risk"
-            elif base_probability < 65:
-                risk_level = "Moderate Risk"
-            else:
-                risk_level = "High Risk"
-
         return jsonify({
-            'age': age,
-            'bmi': bmi,
-            'glucose_level': glucose,
-            'blood_pressure': blood_pressure,
-            'diabetes_risk': risk_level,
-            'probability': round(base_probability, 2),
-            'model_accuracy': round(diabetes_accuracy * 100, 2)
+            'prediction': int(prediction),
+            'probability': float(probability),
+            'accuracy': float(diabetes_accuracy)
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -207,101 +199,30 @@ def predict_diabetes():
 def predict_fruit():
     try:
         data = request.get_json()
-        weight = float(data['weight'])
-        size = float(data['size'])
+        mass = float(data['mass'])
+        width = float(data['width'])
+        height = float(data['height'])
         color_score = float(data['color_score'])
         
         # Input validation
-        if weight <= 0 or size <= 0:
-            return jsonify({'error': 'Weight and size must be positive'}), 400
+        if mass <= 0 or width <= 0 or height <= 0:
+            return jsonify({'error': 'Mass, width, and height must be positive'}), 400
         if color_score < 0 or color_score > 1:
             return jsonify({'error': 'Color score must be between 0 and 1'}), 400
             
         # Scale inputs
-        X = [[weight, size, color_score]]
+        X = [[mass, width, height, color_score]]
         X_scaled = fruit_scaler.transform(X)
         
         # Get prediction probabilities
         probabilities = fruit_model.predict_proba(X_scaled)[0]
         prediction_idx = np.argmax(probabilities)
-        
-        # Get fruit classes
-        fruit_classes = ['Apple', 'Banana', 'Orange']
-        predicted_fruit = fruit_classes[prediction_idx]
-        
-        # Define typical ranges for each fruit
-        typical_ranges = {
-            'Apple': {
-                'weight': (120, 200),
-                'size': (6, 8),
-                'color': (0.7, 0.9)
-            },
-            'Banana': {
-                'weight': (100, 150),
-                'size': (12, 18),
-                'color': (0.5, 0.7)
-            },
-            'Orange': {
-                'weight': (150, 250),
-                'size': (7, 10),
-                'color': (0.6, 0.8)
-            }
-        }
-        
-        # Calculate feature scores for each fruit
-        def calculate_range_score(value, range_tuple):
-            min_val, max_val = range_tuple
-            if min_val <= value <= max_val:
-                return 1.0
-            if value < min_val:
-                return max(0.3, 1 - (min_val - value) / min_val)
-            return max(0.3, 1 - (value - max_val) / max_val)
-        
-        # Calculate scores for each fruit
-        fruit_scores = {}
-        for fruit, ranges in typical_ranges.items():
-            weight_score = calculate_range_score(weight, ranges['weight'])
-            size_score = calculate_range_score(size, ranges['size'])
-            color_score = calculate_range_score(color_score, ranges['color'])
-            
-            # Weight the scores (size is most important for fruit classification)
-            total_score = (weight_score * 0.3 + size_score * 0.5 + color_score * 0.2)
-            
-            # Special handling for orange-like features
-            if fruit == 'Orange' and 150 <= weight <= 250 and 7 <= size <= 10:
-                total_score *= 1.2  # Boost score for orange-like features
-                
-            fruit_scores[fruit] = total_score
-        
-        # Adjust prediction based on feature scores
-        best_fruit = max(fruit_scores.items(), key=lambda x: x[1])[0]
-        if fruit_scores[best_fruit] > fruit_scores[predicted_fruit] * 1.1:  # Reduced threshold
-            predicted_fruit = best_fruit
-            prediction_idx = fruit_classes.index(predicted_fruit)
-        
-        # Calculate final confidence
-        base_confidence = probabilities[prediction_idx]
-        feature_confidence = fruit_scores[predicted_fruit]
-        confidence = (base_confidence * 0.6 + feature_confidence * 0.4) ** 0.5
-        
-        # Prepare top predictions with adjusted probabilities
-        top_predictions = []
-        for i, (fruit, prob) in enumerate(zip(fruit_classes, probabilities)):
-            if prob > 0.01:  # Only include significant probabilities
-                adjusted_prob = prob * fruit_scores[fruit]
-                top_predictions.append({
-                    'fruit': fruit,
-                    'probability': round(adjusted_prob, 2)
-                })
-        
-        # Sort by probability
-        top_predictions.sort(key=lambda x: x['probability'], reverse=True)
+        predicted_fruit = fruit_label_encoder.inverse_transform([prediction_idx])[0]
         
         return jsonify({
             'prediction': predicted_fruit,
-            'confidence': round(confidence, 2),
-            'top_predictions': top_predictions,
-            'model_accuracy': round(fruit_accuracy * 100, 2)
+            'confidence': float(probabilities[prediction_idx] * 100),
+            'accuracy': float(fruit_accuracy)
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -310,40 +231,23 @@ def predict_fruit():
 def predict_temperature():
     try:
         data = request.get_json()
-        day = float(data['day'])
-        humidity = float(data['humidity'])
-        wind_speed = float(data['wind_speed'])
-        pressure = float(data['pressure'])
+        # Get all features except temperature_c
+        input_data = {k: float(v) for k, v in data.items() if k != 'temperature_c'}
         
-        # Validate input ranges
-        if day < 1 or day > 31 or humidity < 0 or humidity > 100 or wind_speed < 0 or wind_speed > 100 or pressure < 900 or pressure > 1100:
-            return jsonify({
-                'error': 'Invalid input values. Day must be between 1-31, humidity between 0-100%, wind speed between 0-100 km/h, and pressure between 900-1100 hPa.'
-            }), 400
+        # Create input array
+        X = np.array([list(input_data.values())])
         
-        # Prepare features using reshape to avoid deprecation warning
-        features = np.array([[day, humidity, wind_speed, pressure]], dtype=np.float64)
-        features_scaled = temp_scaler.transform(features)
-        features_poly = temp_poly.transform(features_scaled)
+        # Scale and transform
+        X_scaled = temp_scaler.transform(X)
+        X_poly = temp_poly.transform(X_scaled)
         
-        # Make prediction and ensure it's a scalar
-        prediction = float(temp_model.predict(features_poly)[0])
-        
-        # Ensure reasonable temperature range (-50°C to 60°C)
-        prediction = max(min(prediction, 60), -50)
+        # Make prediction
+        prediction = temp_model.predict(X_poly)[0][0]
         
         return jsonify({
-            'prediction': prediction,
-            'day': day,
-            'humidity': humidity,
-            'wind_speed': wind_speed,
-            'pressure': pressure,
-            'model_accuracy': round(temp_accuracy * 100, 2)
+            'prediction': float(prediction),
+            'accuracy': float(temp_accuracy)
         })
-    except KeyError as e:
-        return jsonify({'error': f'Missing required field: {str(e)}'}), 400
-    except ValueError as e:
-        return jsonify({'error': 'Invalid input values. Please provide valid numbers.'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
