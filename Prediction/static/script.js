@@ -114,16 +114,44 @@ const forms = {
     }
 };
 
+// Debug function to check form data
+function debugFormData(form) {
+    console.log("Form data:");
+    const formData = new FormData(form);
+    for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+}
+
 // Add form submission handlers
 document.querySelectorAll('.prediction-form').forEach(formContainer => {
     const form = formContainer.querySelector('form');
     const formId = formContainer.id;
     const config = forms[formId];
+    
+    if (!config) {
+        console.error(`No config found for formId: ${formId}`);
+        return;
+    }
+    
     const resultDiv = document.getElementById(config.resultId);
 
     if (form && resultDiv) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Debug: Check form data
+            debugFormData(form);
+            
+            // Clear previous error states
+            clearErrors(form);
+            
+            // Collect form data first
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
             
             // Show loading state
             resultDiv.style.display = 'block';
@@ -134,15 +162,8 @@ document.querySelectorAll('.prediction-form').forEach(formContainer => {
             `;
             
             try {
-                // Collect form data
-                const formData = new FormData(form);
-                const data = {};
-                for (const [key, value] of formData.entries()) {
-                    data[key] = value;
-                }
-
                 // Validate form data
-                if (!validateForm(form)) {
+                if (!validateForm(form, data)) {
                     throw new Error('Please fill in all required fields correctly');
                 }
                 
@@ -177,28 +198,47 @@ document.querySelectorAll('.prediction-form').forEach(formContainer => {
     }
 });
 
+// Clear error states
+function clearErrors(form) {
+    form.querySelectorAll('.is-invalid').forEach(element => {
+        element.classList.remove('is-invalid');
+    });
+    
+    form.querySelectorAll('.invalid-feedback').forEach(element => {
+        element.remove();
+    });
+}
+
 // Form Validation
-function validateForm(form) {
+function validateForm(form, formData) {
     let isValid = true;
     const inputs = form.querySelectorAll('input[required], select[required]');
 
     inputs.forEach(input => {
-        if (!input.value.trim()) {
-            showError(input, 'This field is required');
+        // Get input value from the input element directly
+        const value = input.value;
+        const name = input.name;
+        const label = input.previousElementSibling ? input.previousElementSibling.textContent : name;
+        
+        // Check if field is empty
+        if (!value || value.trim() === '') {
+            showError(input, `${label} is required`);
             isValid = false;
-        } else if (input.type === 'number') {
-            const value = parseFloat(input.value);
-            const min = parseFloat(input.min);
-            const max = parseFloat(input.max);
-
-            if (isNaN(value)) {
-                showError(input, 'Please enter a valid number');
+            return; // Skip further validation for this field
+        }
+        
+        // Additional validation for number inputs
+        if (input.type === 'number') {
+            const numValue = parseFloat(value);
+            
+            if (isNaN(numValue)) {
+                showError(input, `Please enter a valid number for ${label}`);
                 isValid = false;
-            } else if (min !== undefined && value < min) {
-                showError(input, `Value must be at least ${min}`);
+            } else if (input.hasAttribute('min') && numValue < parseFloat(input.min)) {
+                showError(input, `${label} must be at least ${input.min}`);
                 isValid = false;
-            } else if (max !== undefined && value > max) {
-                showError(input, `Value must be at most ${max}`);
+            } else if (input.hasAttribute('max') && numValue > parseFloat(input.max)) {
+                showError(input, `${label} must be at most ${input.max}`);
                 isValid = false;
             }
         }
@@ -211,30 +251,28 @@ function validateForm(form) {
 function showError(element, message) {
     const formGroup = element.closest('.form-group');
     if (formGroup) {
-        const feedback = formGroup.querySelector('.invalid-feedback') || 
-                        createErrorFeedback(formGroup);
+        // Remove any existing feedback
+        const existingFeedback = formGroup.querySelector('.invalid-feedback');
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
         
+        // Create new feedback
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
         feedback.textContent = message;
+        feedback.style.display = 'block'; // Make sure the feedback is visible
+        formGroup.appendChild(feedback);
+        
+        // Mark the input as invalid
         element.classList.add('is-invalid');
     }
-}
-
-function createErrorFeedback(formGroup) {
-    const feedback = document.createElement('div');
-    feedback.className = 'invalid-feedback';
-    formGroup.appendChild(feedback);
-    return feedback;
 }
 
 // Reset form and error states
 function resetForm(form) {
     form.reset();
-    form.querySelectorAll('.is-invalid').forEach(element => {
-        element.classList.remove('is-invalid');
-    });
-    form.querySelectorAll('.invalid-feedback').forEach(element => {
-        element.remove();
-    });
+    clearErrors(form);
 }
 
 // Initialize the page

@@ -5,7 +5,7 @@ from sklearn.preprocessing import FunctionTransformer
 import joblib
 
 class HousePricePredictor:
-    def __init__(self, model_path='house_model.pkl'):
+    def __init__(self, model_path='house_price_model.pkl'):
         self.min_sqft = 900
         self.max_sqft = 5000
         self.min_price = 10  # Minimum realistic price in lakhs
