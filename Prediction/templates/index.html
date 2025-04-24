@@ -29,7 +29,7 @@
             <!-- Model Selection -->
             <div class="model-selector">
                 <div class="model-tabs">
-                    <button class="model-tab" data-form="houseForm">
+                    <button class="model-tab active" data-form="houseForm">
                         <i class="fas fa-home"></i>
                         <span>House Price</span>
                     </button>
@@ -55,14 +55,14 @@
             <!-- Prediction Forms -->
             <div class="prediction-container">
                 <!-- House Price Form -->
-                <div class="prediction-form" id="houseForm" style="display: none;">
+                <div class="prediction-form active" id="houseForm">
                     <div class="card">
                         <div class="card-body">
                             <h3>House Price Prediction</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ house_accuracy }}
                             </div>
-                            <form>
+                            <form id="housePredictionForm">
                                 <div class="form-group mb-3">
                                     <label for="sqft">Square Footage</label>
                                     <input type="number" class="form-control" id="sqft" name="square_footage" min="100" required>
@@ -71,20 +71,20 @@
                                     <i class="fas fa-calculator"></i> Predict Price
                                 </button>
                             </form>
-                            <div id="houseResult" style="display: none;"></div>
+                            <div id="houseResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Salary Form -->
-                <div class="prediction-form" id="salaryForm" style="display: none;">
+                <div class="prediction-form" id="salaryForm">
                     <div class="card">
                         <div class="card-body">
                             <h3>Employee Salary Prediction</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ salary_accuracy }}
                             </div>
-                            <form>
+                            <form id="salaryPredictionForm">
                                 <div class="form-group mb-3">
                                     <label for="age">Age</label>
                                     <input type="number" class="form-control" id="age" name="age" min="18" max="65" required>
@@ -118,31 +118,31 @@
                                     <i class="fas fa-calculator"></i> Predict Salary
                                 </button>
                             </form>
-                            <div id="salaryResult" style="display: none;"></div>
+                            <div id="salaryResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Diabetes Form -->
-                <div class="prediction-form" id="diabetesForm" style="display: none;">
+                <div class="prediction-form" id="diabetesForm">
                     <div class="card">
                         <div class="card-body">
                             <h3>Diabetes Risk Prediction</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ diabetes_accuracy }}
                             </div>
-                            <form>
+                            <form id="diabetesPredictionForm">
                                 <div class="form-group mb-3">
-                                    <label for="gender">Gender</label>
-                                    <select class="form-control" id="gender" name="gender" required>
+                                    <label for="gender_diabetes">Gender</label>
+                                    <select class="form-control" id="gender_diabetes" name="gender" required>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label for="age">Age</label>
-                                    <input type="number" class="form-control" id="age" name="age" min="0" max="120" required>
+                                    <label for="age_diabetes">Age</label>
+                                    <input type="number" class="form-control" id="age_diabetes" name="age" min="0" max="120" required>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="hypertension">Hypertension</label>
@@ -183,20 +183,20 @@
                                     <i class="fas fa-heartbeat"></i> Assess Diabetes Risk
                                 </button>
                             </form>
-                            <div id="diabetesResult" style="display: none;"></div>
+                            <div id="diabetesResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Fruit Form -->
-                <div class="prediction-form" id="fruitForm" style="display: none;">
+                <div class="prediction-form" id="fruitForm">
                     <div class="card">
                         <div class="card-body">
                             <h3>Fruit Classification</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ fruit_accuracy }}
                             </div>
-                            <form>
+                            <form id="fruitPredictionForm">
                                 <div class="form-group mb-3">
                                     <label for="mass">Mass (grams)</label>
                                     <input type="number" class="form-control" id="mass" name="mass" min="0" step="0.1" required>
@@ -217,20 +217,20 @@
                                     <i class="fas fa-apple-alt"></i> Classify Fruit
                                 </button>
                             </form>
-                            <div id="fruitResult" style="display: none;"></div>
+                            <div id="fruitResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Temperature Form -->
-                <div class="prediction-form" id="temperatureForm" style="display: none;">
+                <div class="prediction-form" id="temperatureForm">
                     <div class="card">
                         <div class="card-body">
                             <h3>Temperature Prediction</h3>
                             <div class="alert alert-info">
                                 Model Accuracy: {{ temp_accuracy }}
                             </div>
-                            <form>
+                            <form id="temperaturePredictionForm">
                                 <div class="form-group mb-3">
                                     <label for="day">Day of Month</label>
                                     <input type="number" class="form-control" id="day" name="day" min="1" max="31" required>
@@ -251,7 +251,7 @@
                                     <i class="fas fa-thermometer-half"></i> Predict Temperature
                                 </button>
                             </form>
-                            <div id="temperatureResult" style="display: none;"></div>
+                            <div id="temperatureResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>

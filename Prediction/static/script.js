@@ -1,291 +1,317 @@
-// Theme Toggle
-const themeSwitch = document.getElementById('theme-switch');
-const body = document.body;
+/**
+ * ML Prediction Dashboard JavaScript
+ * Handles form submissions, tab switching, and theme toggling
+ */
 
-// Check for saved theme preference
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-    body.classList.remove('light-mode');
-    body.classList.add('dark-mode');
-    themeSwitch.checked = true;
-}
-
-themeSwitch.addEventListener('change', (e) => {
-    if (e.target.checked) {
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme toggle functionality
+    const themeSwitch = document.getElementById('theme-switch');
+    const body = document.body;
+    
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
         body.classList.remove('light-mode');
         body.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        body.classList.remove('dark-mode');
-        body.classList.add('light-mode');
-        localStorage.setItem('theme', 'light');
+        themeSwitch.checked = true;
     }
-});
-
-// Model Selection
-const modelTabs = document.querySelectorAll('.model-tab');
-const predictionForms = document.querySelectorAll('.prediction-form');
-
-modelTabs.forEach(tab => {
-    tab.addEventListener('click', (e) => {
-        const targetForm = e.target.closest('.model-tab').dataset.form;
-        
-        // Update active tab
-        modelTabs.forEach(t => t.classList.remove('active'));
-        e.target.closest('.model-tab').classList.add('active');
-        
-        // Show target form
-        predictionForms.forEach(form => {
-            if (form.id === targetForm) {
-                form.style.display = 'block';
-            } else {
-                form.style.display = 'none';
-            }
+    
+    // Theme switch event listener
+    themeSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            body.classList.remove('light-mode');
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+    
+    // Model tab switching
+    const modelTabs = document.querySelectorAll('.model-tab');
+    const predictionForms = document.querySelectorAll('.prediction-form');
+    
+    modelTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs and forms
+            modelTabs.forEach(t => t.classList.remove('active'));
+            predictionForms.forEach(form => form.classList.remove('active'));
+            
+            // Add active class to selected tab
+            this.classList.add('active');
+            
+            // Show the corresponding form
+            const formId = this.getAttribute('data-form');
+            document.getElementById(formId).classList.add('active');
         });
     });
-});
-
-// Form Validation and Submission
-const forms = {
-    houseForm: {
-        endpoint: '/predict_house',
-        resultId: 'houseResult',
-        processResult: (data) => {
-            let html = `
-                <div class="alert alert-success">
-                    <h4>Predicted House Price: ₹${data.prediction.toLocaleString()} lakh</h4>
-                    <p>Model Accuracy: ${(data.accuracy * 100).toFixed(2)}%</p>
-            `;
-            
-            if (data.warning) {
-                html += `
-                    <div class="alert alert-warning mt-2">
-                        <i class="fas fa-exclamation-triangle"></i> ${data.warning}
-                    </div>
-                `;
-            }
-            
-            html += '</div>';
-            return html;
-        }
-    },
-    salaryForm: {
-        endpoint: '/predict_salary',
-        resultId: 'salaryResult',
-        processResult: (data) => `
-            <div class="alert alert-success">
-                <h4>Predicted Salary: ₹${data.prediction.toLocaleString()}</h4>
-                <p>Model Accuracy: ${(data.accuracy * 100).toFixed(2)}%</p>
-            </div>
-        `
-    },
-    diabetesForm: {
-        endpoint: '/predict_diabetes',
-        resultId: 'diabetesResult',
-        processResult: (data) => `
-            <div class="alert ${data.prediction === 1 ? 'alert-danger' : 'alert-success'}">
-                <h4>Diabetes Risk Assessment</h4>
-                <p>Prediction: ${data.prediction === 1 ? 'High Risk' : 'Low Risk'}</p>
-                <p>Probability: ${data.probability.toFixed(2)}%</p>
-                <p>Model Accuracy: ${(data.accuracy * 100).toFixed(2)}%</p>
-            </div>
-        `
-    },
-    fruitForm: {
-        endpoint: '/predict_fruit',
-        resultId: 'fruitResult',
-        processResult: (data) => `
-            <div class="alert alert-success">
-                <h4>Predicted Fruit: ${data.prediction}</h4>
-                <p>Confidence: ${data.confidence.toFixed(2)}%</p>
-                <p>Model Accuracy: ${(data.accuracy * 100).toFixed(2)}%</p>
-            </div>
-        `
-    },
-    temperatureForm: {
-        endpoint: '/predict_temperature',
-        resultId: 'temperatureResult',
-        processResult: (data) => `
-            <div class="alert alert-info">
-                <h4>Predicted Temperature: ${data.prediction.toFixed(1)}°C</h4>
-                <p>Model Accuracy: ${(data.accuracy * 100).toFixed(2)}%</p>
-            </div>
-        `
-    }
-};
-
-// Debug function to check form data
-function debugFormData(form) {
-    console.log("Form data:");
-    const formData = new FormData(form);
-    for (const [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
-}
-
-// Add form submission handlers
-document.querySelectorAll('.prediction-form').forEach(formContainer => {
-    const form = formContainer.querySelector('form');
-    const formId = formContainer.id;
-    const config = forms[formId];
     
-    if (!config) {
-        console.error(`No config found for formId: ${formId}`);
-        return;
-    }
+    // House Price Prediction Form
+    const housePredictionForm = document.getElementById('housePredictionForm');
+    const houseResult = document.getElementById('houseResult');
     
-    const resultDiv = document.getElementById(config.resultId);
-
-    if (form && resultDiv) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Debug: Check form data
-            debugFormData(form);
-            
-            // Clear previous error states
-            clearErrors(form);
-            
-            // Collect form data first
-            const formData = new FormData(form);
-            const data = {};
-            for (const [key, value] of formData.entries()) {
-                data[key] = value;
-            }
-            
-            // Show loading state
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                <div class="alert alert-info">
-                    <i class="fas fa-spinner fa-spin"></i> Processing...
-                </div>
-            `;
-            
-            try {
-                // Validate form data
-                if (!validateForm(form, data)) {
-                    throw new Error('Please fill in all required fields correctly');
-                }
-                
-                // Send prediction request
-                const response = await fetch(config.endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+    housePredictionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        houseResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
+        houseResult.style.display = 'block';
+        
+        // Get form data
+        const formData = new FormData(this);
+        const squareFootage = formData.get('square_footage');
+        
+        // Send API request
+        fetch('/predict/house', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                square_footage: squareFootage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                houseResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                const price = parseFloat(data.predicted_price).toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
                 });
                 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Prediction failed');
-                }
-                
-                const result = await response.json();
-                
-                // Display result
-                resultDiv.innerHTML = config.processResult(result);
-                
-            } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="alert alert-danger">
-                        <h4>Error</h4>
-                        <p>${error.message}</p>
+                houseResult.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Prediction Result</h4>
+                        <p>Based on ${squareFootage} square feet:</p>
+                        <div class="prediction-value">${price}</div>
                     </div>
                 `;
             }
+        })
+        .catch(error => {
+            houseResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
         });
-    }
-});
-
-// Clear error states
-function clearErrors(form) {
-    form.querySelectorAll('.is-invalid').forEach(element => {
-        element.classList.remove('is-invalid');
     });
     
-    form.querySelectorAll('.invalid-feedback').forEach(element => {
-        element.remove();
-    });
-}
-
-// Form Validation
-function validateForm(form, formData) {
-    let isValid = true;
-    const inputs = form.querySelectorAll('input[required], select[required]');
-
-    inputs.forEach(input => {
-        // Get input value from the input element directly
-        const value = input.value;
-        const name = input.name;
-        const label = input.previousElementSibling ? input.previousElementSibling.textContent : name;
+    // Salary Prediction Form
+    const salaryPredictionForm = document.getElementById('salaryPredictionForm');
+    const salaryResult = document.getElementById('salaryResult');
+    
+    salaryPredictionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // Check if field is empty
-        if (!value || value.trim() === '') {
-            showError(input, `${label} is required`);
-            isValid = false;
-            return; // Skip further validation for this field
-        }
+        // Show loading state
+        salaryResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
+        salaryResult.style.display = 'block';
         
-        // Additional validation for number inputs
-        if (input.type === 'number') {
-            const numValue = parseFloat(value);
-            
-            if (isNaN(numValue)) {
-                showError(input, `Please enter a valid number for ${label}`);
-                isValid = false;
-            } else if (input.hasAttribute('min') && numValue < parseFloat(input.min)) {
-                showError(input, `${label} must be at least ${input.min}`);
-                isValid = false;
-            } else if (input.hasAttribute('max') && numValue > parseFloat(input.max)) {
-                showError(input, `${label} must be at most ${input.max}`);
-                isValid = false;
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Send API request
+        fetch('/predict/salary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                age: formData.get('age'),
+                years_experience: formData.get('years_experience'),
+                gender: formData.get('gender'),
+                education_level: formData.get('education_level'),
+                job_title: formData.get('job_title')
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                salaryResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                const salary = parseFloat(data.predicted_salary).toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                });
+                
+                salaryResult.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Prediction Result</h4>
+                        <p>For a ${formData.get('gender')} ${formData.get('age')} years old with ${formData.get('years_experience')} years of experience, 
+                        ${formData.get('education_level')} education, working as ${formData.get('job_title')}:</p>
+                        <div class="prediction-value">${salary} annual salary</div>
+                    </div>
+                `;
             }
-        }
+        })
+        .catch(error => {
+            salaryResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        });
     });
-
-    return isValid;
-}
-
-// Error Display
-function showError(element, message) {
-    const formGroup = element.closest('.form-group');
-    if (formGroup) {
-        // Remove any existing feedback
-        const existingFeedback = formGroup.querySelector('.invalid-feedback');
-        if (existingFeedback) {
-            existingFeedback.remove();
-        }
-        
-        // Create new feedback
-        const feedback = document.createElement('div');
-        feedback.className = 'invalid-feedback';
-        feedback.textContent = message;
-        feedback.style.display = 'block'; // Make sure the feedback is visible
-        formGroup.appendChild(feedback);
-        
-        // Mark the input as invalid
-        element.classList.add('is-invalid');
-    }
-}
-
-// Reset form and error states
-function resetForm(form) {
-    form.reset();
-    clearErrors(form);
-}
-
-// Initialize the page
-document.addEventListener('DOMContentLoaded', () => {
-    // Show the first form by default
-    const firstForm = document.querySelector('.prediction-form');
-    if (firstForm) {
-        firstForm.style.display = 'block';
-    }
     
-    // Set the first tab as active
-    const firstTab = document.querySelector('.model-tab');
-    if (firstTab) {
-        firstTab.classList.add('active');
-    }
+    // Diabetes Risk Prediction Form
+    const diabetesPredictionForm = document.getElementById('diabetesPredictionForm');
+    const diabetesResult = document.getElementById('diabetesResult');
+    
+    diabetesPredictionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        diabetesResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
+        diabetesResult.style.display = 'block';
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Send API request
+        fetch('/predict/diabetes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                gender: formData.get('gender'),
+                age: formData.get('age'),
+                hypertension: formData.get('hypertension'),
+                heart_disease: formData.get('heart_disease'),
+                smoking_history: formData.get('smoking_history'),
+                bmi: formData.get('bmi'),
+                hba1c_level: formData.get('hba1c_level'),
+                blood_glucose_level: formData.get('blood_glucose_level')
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                diabetesResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                const riskClass = data.risk_level === 'High' ? 'alert-danger' : 
+                                 (data.risk_level === 'Medium' ? 'alert-warning' : 'alert-success');
+                
+                diabetesResult.innerHTML = `
+                    <div class="alert ${riskClass}">
+                        <h4>Prediction Result</h4>
+                        <p>Based on your health information:</p>
+                        <div class="prediction-value">
+                            ${data.has_diabetes ? 'Positive' : 'Negative'} for Diabetes
+                        </div>
+                        <p>Risk Level: <strong>${data.risk_level}</strong></p>
+                        <p>${data.recommendation}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            diabetesResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        });
+    });
+    
+    // Fruit Classification Form
+    const fruitPredictionForm = document.getElementById('fruitPredictionForm');
+    const fruitResult = document.getElementById('fruitResult');
+    
+    fruitPredictionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        fruitResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
+        fruitResult.style.display = 'block';
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Send API request
+        fetch('/predict/fruit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                mass: formData.get('mass'),
+                width: formData.get('width'),
+                height: formData.get('height'),
+                color_score: formData.get('color_score')
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                fruitResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                const confidencePercent = (data.confidence * 100).toFixed(2);
+                
+                fruitResult.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Classification Result</h4>
+                        <p>Based on the measurements:</p>
+                        <div class="prediction-value">${data.fruit_type}</div>
+                        <p>Confidence: <strong>${confidencePercent}%</strong></p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            fruitResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        });
+    });
+    
+    // Temperature Prediction Form
+    const temperaturePredictionForm = document.getElementById('temperaturePredictionForm');
+    const temperatureResult = document.getElementById('temperatureResult');
+    
+    temperaturePredictionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        temperatureResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
+        temperatureResult.style.display = 'block';
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Send API request
+        fetch('/predict/temperature', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                day: formData.get('day'),
+                humidity: formData.get('humidity'),
+                wind_speed: formData.get('wind_speed'),
+                pressure: formData.get('pressure')
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                temperatureResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                temperatureResult.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Prediction Result</h4>
+                        <p>Based on weather conditions:</p>
+                        <div class="prediction-value">${data.predicted_temperature}°C</div>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            temperatureResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+        });
+    });
+    
+    // Form validation
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
 });

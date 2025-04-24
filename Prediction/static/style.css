@@ -61,7 +61,7 @@ body {
 h1 {
     margin: 0;
     font-size: 1.8rem;
-    color: var(--light-text);
+    color: var(--text-color);
 }
 
 /* Theme Toggle */
@@ -185,6 +185,7 @@ h1 {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     margin-bottom: 1rem;
+    transition: all var(--transition-speed);
 }
 
 .card:hover {
@@ -197,7 +198,7 @@ h1 {
 }
 
 .card h3 {
-    color: var(--light-text);
+    color: var(--text-color);
     margin-bottom: 1.5rem;
 }
 
@@ -206,7 +207,7 @@ h1 {
 }
 
 .form-label {
-    color: var(--light-text);
+    color: var(--text-color);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -276,13 +277,20 @@ h1 {
     color: var(--info-color);
 }
 
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
 /* Footer */
 .app-footer {
     margin-top: auto;
     padding: 2rem 0;
     background-color: var(--card-bg);
     text-align: center;
-    color: var(--light-text);
+    color: var(--text-color);
+    border-top: 1px solid var(--border-color);
 }
 
 /* Animations */
@@ -312,6 +320,13 @@ h1 {
     to {
         transform: rotate(360deg);
     }
+}
+
+.prediction-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 1rem 0;
 }
 
 /* Responsive Design */
