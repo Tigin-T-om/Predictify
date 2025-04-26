@@ -1,317 +1,256 @@
-/**
- * ML Prediction Dashboard JavaScript
- * Handles form submissions, tab switching, and theme toggling
- */
-
+// Wait for DOM to be fully loaded before attaching event handlers
 document.addEventListener('DOMContentLoaded', function() {
-    // Theme toggle functionality
-    const themeSwitch = document.getElementById('theme-switch');
-    const body = document.body;
-    
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.remove('light-mode');
-        body.classList.add('dark-mode');
-        themeSwitch.checked = true;
-    }
-    
-    // Theme switch event listener
-    themeSwitch.addEventListener('change', function() {
-        if (this.checked) {
-            body.classList.remove('light-mode');
-            body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.remove('dark-mode');
-            body.classList.add('light-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    });
-    
-    // Model tab switching
-    const modelTabs = document.querySelectorAll('.model-tab');
-    const predictionForms = document.querySelectorAll('.prediction-form');
-    
-    modelTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs and forms
-            modelTabs.forEach(t => t.classList.remove('active'));
-            predictionForms.forEach(form => form.classList.remove('active'));
-            
-            // Add active class to selected tab
-            this.classList.add('active');
-            
-            // Show the corresponding form
-            const formId = this.getAttribute('data-form');
-            document.getElementById(formId).classList.add('active');
+    // Get model info when page loads
+    fetch('/get_model_info')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Model info loaded:', data);
+        })
+        .catch(error => {
+            console.error('Error fetching model info:', error);
         });
-    });
-    
+
     // House Price Prediction Form
-    const housePredictionForm = document.getElementById('housePredictionForm');
-    const houseResult = document.getElementById('houseResult');
-    
-    housePredictionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        houseResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
-        houseResult.style.display = 'block';
-        
-        // Get form data
-        const formData = new FormData(this);
-        const squareFootage = formData.get('square_footage');
-        
-        // Send API request
-        fetch('/predict/house', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                square_footage: squareFootage
+    const housePriceForm = document.getElementById('house-price-form');
+    if (housePriceForm) {
+        housePriceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(housePriceForm);
+            const resultDiv = document.getElementById('house-price-result');
+            
+            // Show loading state
+            resultDiv.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Processing...';
+            resultDiv.style.display = 'block';
+            
+            fetch('/predict_house_price', {
+                method: 'POST',
+                body: formData
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                houseResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            } else {
-                const price = parseFloat(data.predicted_price).toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                });
-                
-                houseResult.innerHTML = `
-                    <div class="alert alert-success">
-                        <h4>Prediction Result</h4>
-                        <p>Based on ${squareFootage} square feet:</p>
-                        <div class="prediction-value">${price}</div>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            houseResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
-        });
-    });
-    
-    // Salary Prediction Form
-    const salaryPredictionForm = document.getElementById('salaryPredictionForm');
-    const salaryResult = document.getElementById('salaryResult');
-    
-    salaryPredictionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        salaryResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
-        salaryResult.style.display = 'block';
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Send API request
-        fetch('/predict/salary', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                age: formData.get('age'),
-                years_experience: formData.get('years_experience'),
-                gender: formData.get('gender'),
-                education_level: formData.get('education_level'),
-                job_title: formData.get('job_title')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Modified to include "lakhs" in the output
+                    resultDiv.innerHTML = `<h4>Predicted House Price:</h4><p class="fs-3 fw-bold">${data.prediction} lakhs</p>`;
+                    resultDiv.className = 'mt-4 result-success';
+                } else {
+                    resultDiv.innerHTML = `<h4>Error:</h4><p>${data.error}</p>`;
+                    resultDiv.className = 'mt-4 result-error';
+                }
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                salaryResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            } else {
-                const salary = parseFloat(data.predicted_salary).toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                });
-                
-                salaryResult.innerHTML = `
-                    <div class="alert alert-success">
-                        <h4>Prediction Result</h4>
-                        <p>For a ${formData.get('gender')} ${formData.get('age')} years old with ${formData.get('years_experience')} years of experience, 
-                        ${formData.get('education_level')} education, working as ${formData.get('job_title')}:</p>
-                        <div class="prediction-value">${salary} annual salary</div>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            salaryResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+            .catch(error => {
+                resultDiv.innerHTML = `<h4>Error:</h4><p>An unexpected error occurred: ${error.message}</p>`;
+                resultDiv.className = 'mt-4 result-error';
+            });
         });
-    });
-    
-    // Diabetes Risk Prediction Form
-    const diabetesPredictionForm = document.getElementById('diabetesPredictionForm');
-    const diabetesResult = document.getElementById('diabetesResult');
-    
-    diabetesPredictionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        diabetesResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
-        diabetesResult.style.display = 'block';
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Send API request
-        fetch('/predict/diabetes', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                gender: formData.get('gender'),
-                age: formData.get('age'),
-                hypertension: formData.get('hypertension'),
-                heart_disease: formData.get('heart_disease'),
-                smoking_history: formData.get('smoking_history'),
-                bmi: formData.get('bmi'),
-                hba1c_level: formData.get('hba1c_level'),
-                blood_glucose_level: formData.get('blood_glucose_level')
+    }
+
+    // Employee Salary Prediction Form
+    const salaryForm = document.getElementById('salary-form');
+    if (salaryForm) {
+        salaryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(salaryForm);
+            const resultDiv = document.getElementById('salary-result');
+            
+            // Show loading state
+            resultDiv.innerHTML = '<div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div> Processing...';
+            resultDiv.style.display = 'block';
+            
+            fetch('/predict_salary', {
+                method: 'POST',
+                body: formData
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                diabetesResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            } else {
-                const riskClass = data.risk_level === 'High' ? 'alert-danger' : 
-                                 (data.risk_level === 'Medium' ? 'alert-warning' : 'alert-success');
-                
-                diabetesResult.innerHTML = `
-                    <div class="alert ${riskClass}">
-                        <h4>Prediction Result</h4>
-                        <p>Based on your health information:</p>
-                        <div class="prediction-value">
-                            ${data.has_diabetes ? 'Positive' : 'Negative'} for Diabetes
-                        </div>
-                        <p>Risk Level: <strong>${data.risk_level}</strong></p>
-                        <p>${data.recommendation}</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            diabetesResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
-        });
-    });
-    
-    // Fruit Classification Form
-    const fruitPredictionForm = document.getElementById('fruitPredictionForm');
-    const fruitResult = document.getElementById('fruitResult');
-    
-    fruitPredictionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        fruitResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
-        fruitResult.style.display = 'block';
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Send API request
-        fetch('/predict/fruit', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                mass: formData.get('mass'),
-                width: formData.get('width'),
-                height: formData.get('height'),
-                color_score: formData.get('color_score')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `<h4>Predicted Annual Salary:</h4><p class="fs-3 fw-bold">${data.prediction}</p>`;
+                    resultDiv.className = 'mt-4 result-success';
+                } else {
+                    resultDiv.innerHTML = `<h4>Error:</h4><p>${data.error}</p>`;
+                    resultDiv.className = 'mt-4 result-error';
+                }
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                fruitResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            } else {
-                const confidencePercent = (data.confidence * 100).toFixed(2);
-                
-                fruitResult.innerHTML = `
-                    <div class="alert alert-success">
-                        <h4>Classification Result</h4>
-                        <p>Based on the measurements:</p>
-                        <div class="prediction-value">${data.fruit_type}</div>
-                        <p>Confidence: <strong>${confidencePercent}%</strong></p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            fruitResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
+            .catch(error => {
+                resultDiv.innerHTML = `<h4>Error:</h4><p>An unexpected error occurred: ${error.message}</p>`;
+                resultDiv.className = 'mt-4 result-error';
+            });
         });
-    });
-    
+    }
+
     // Temperature Prediction Form
-    const temperaturePredictionForm = document.getElementById('temperaturePredictionForm');
-    const temperatureResult = document.getElementById('temperatureResult');
-    
-    temperaturePredictionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        temperatureResult.innerHTML = '<div class="alert alert-info">Processing your request... <span class="loading"></span></div>';
-        temperatureResult.style.display = 'block';
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Send API request
-        fetch('/predict/temperature', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                day: formData.get('day'),
-                humidity: formData.get('humidity'),
-                wind_speed: formData.get('wind_speed'),
-                pressure: formData.get('pressure')
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                temperatureResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-            } else {
-                temperatureResult.innerHTML = `
-                    <div class="alert alert-success">
-                        <h4>Prediction Result</h4>
-                        <p>Based on weather conditions:</p>
-                        <div class="prediction-value">${data.predicted_temperature}°C</div>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            temperatureResult.innerHTML = `<div class="alert alert-danger">An error occurred: ${error.message}</div>`;
-        });
-    });
-    
-    // Form validation
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+    const temperatureForm = document.getElementById('temperature-form');
+    if (temperatureForm) {
+        temperatureForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(temperatureForm);
+            const resultDiv = document.getElementById('temperature-result');
+            
+            // Make sure precipitation_type is included
+            if (!formData.has('precipitation_type')) {
+                // Default to 'None' if not selected
+                formData.append('precipitation_type', 'None');
             }
             
-            form.classList.add('was-validated');
-        }, false);
-    });
+            // Show loading state
+            resultDiv.innerHTML = '<div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span></div> Processing...';
+            resultDiv.style.display = 'block';
+            
+            fetch('/predict_temperature', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `<h4>Predicted Temperature:</h4><p class="fs-3 fw-bold">${data.prediction}°C</p>`;
+                    resultDiv.className = 'mt-4 result-success';
+                } else {
+                    resultDiv.innerHTML = `<h4>Error:</h4><p>${data.error}</p>`;
+                    resultDiv.className = 'mt-4 result-error';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<h4>Error:</h4><p>An unexpected error occurred: ${error.message}</p>`;
+                resultDiv.className = 'mt-4 result-error';
+            });
+        });
+    }
+
+    // Fruit Classification Form
+    const fruitForm = document.getElementById('fruit-form');
+    if (fruitForm) {
+        fruitForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(fruitForm);
+            const resultDiv = document.getElementById('fruit-result');
+            
+            // Show loading state
+            resultDiv.innerHTML = '<div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div> Processing...';
+            resultDiv.style.display = 'block';
+            
+            fetch('/predict_fruit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `<h4>Classified Fruit:</h4><p class="fs-3 fw-bold">${data.prediction}</p>`;
+                    resultDiv.className = 'mt-4 result-success';
+                } else {
+                    resultDiv.innerHTML = `<h4>Error:</h4><p>${data.error}</p>`;
+                    resultDiv.className = 'mt-4 result-error';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<h4>Error:</h4><p>An unexpected error occurred: ${error.message}</p>`;
+                resultDiv.className = 'mt-4 result-error';
+            });
+        });
+    }
+
+    // Diabetes Prediction Form
+    const diabetesForm = document.getElementById('diabetes-form');
+    if (diabetesForm) {
+        diabetesForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(diabetesForm);
+            const resultDiv = document.getElementById('diabetes-result');
+            
+            // Show loading state
+            resultDiv.innerHTML = '<div class="spinner-border text-danger" role="status"><span class="visually-hidden">Loading...</span></div> Processing...';
+            resultDiv.style.display = 'block';
+            
+            fetch('/predict_diabetes', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h4>Diabetes Prediction:</h4>
+                        <p class="fs-3 fw-bold">${data.prediction}</p>
+                        <p class="fs-5">Probability: ${data.probability}</p>
+                        <div class="alert alert-warning mt-3">
+                            <strong>Disclaimer:</strong> This is a demonstration model only and should not be used for actual medical diagnosis.
+                            Always consult a healthcare professional for medical advice.
+                        </div>
+                    `;
+                    resultDiv.className = 'mt-4 result-success';
+                } else {
+                    resultDiv.innerHTML = `<h4>Error:</h4><p>${data.error}</p>`;
+                    resultDiv.className = 'mt-4 result-error';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<h4>Error:</h4><p>An unexpected error occurred: ${error.message}</p>`;
+                resultDiv.className = 'mt-4 result-error';
+            });
+        });
+    }
+
+    // Initialize proper tab handling for form IDs with same names across tabs
+    const tabLinks = document.querySelectorAll('.nav-link');
+    if (tabLinks) {
+        tabLinks.forEach(tabLink => {
+            tabLink.addEventListener('click', function() {
+                // Clear all previous results when switching tabs
+                const resultDivs = document.querySelectorAll('[id$="-result"]');
+                resultDivs.forEach(div => {
+                    div.style.display = 'none';
+                    div.innerHTML = '';
+                });
+            });
+        });
+    }
+
+    // Set default values for forms to make testing easier
+    // House Price Form
+    if (document.getElementById('square_footage')) {
+        document.getElementById('square_footage').value = '1500';
+    }
+
+    // Salary Form
+    if (document.getElementById('age')) {
+        document.getElementById('age').value = '35';
+        document.getElementById('experience').value = '10';
+    }
+
+    // Temperature Form
+    if (document.getElementById('apparent_temperature')) {
+        document.getElementById('apparent_temperature').value = '25.5';
+        document.getElementById('humidity').value = '0.7';
+        document.getElementById('wind_speed').value = '10.2';
+        document.getElementById('wind_bearing').value = '180';
+        document.getElementById('visibility').value = '15.0';
+        document.getElementById('cloud_cover').value = '0.3';
+        document.getElementById('pressure').value = '1012.5';
+        document.getElementById('year').value = '2025';
+        document.getElementById('month').value = '4';
+        document.getElementById('day').value = '15';
+        document.getElementById('hour').value = '14';
+        
+        // Set default for precipitation type
+        const precipitationTypeRadios = document.querySelectorAll('input[name="precipitation_type"]');
+        if (precipitationTypeRadios.length > 0) {
+            precipitationTypeRadios[0].checked = true; // Select "None" by default
+        }
+    }
+
+    // Fruit Form
+    if (document.getElementById('mass')) {
+        document.getElementById('mass').value = '150';
+        document.getElementById('width').value = '7.5';
+        document.getElementById('height').value = '9.2';
+        document.getElementById('color_score').value = '0.75';
+    }
+
+    // Diabetes Form
+    if (document.getElementById('age-diabetes')) {
+        document.getElementById('age-diabetes').value = '45';
+        document.getElementById('bmi').value = '26.5';
+        document.getElementById('hba1c').value = '5.7';
+        document.getElementById('glucose').value = '120';
+    }
 });

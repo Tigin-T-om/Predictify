@@ -81,4 +81,4 @@ plt.show()
 min_sqft = 100
 min_sqft_scaled = scaler.transform([[min_sqft]])
 min_pred = regressor.predict(min_sqft_scaled)[0][0]
-print(f"Prediction for 100 sqft: ₹{min_pred:,.2f}")
+print(f"Prediction for 100 sqft: ₹{min_pred:,.2f} lakhs")

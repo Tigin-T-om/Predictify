@@ -3,266 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Prediction Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <title>Machine Learning Model Predictions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="light-mode">
-    <header class="app-header">
-        <div class="container">
-            <div class="header-content">
-                <h1>ML Prediction Dashboard</h1>
-                <div class="theme-toggle">
-                    <input type="checkbox" id="theme-switch">
-                    <label for="theme-switch">
-                        <i class="fas fa-sun"></i>
-                        <i class="fas fa-moon"></i>
-                    </label>
-                </div>
-            </div>
+<body>
+    <div class="container">
+        <header class="text-center my-4">
+            <h1>Machine Learning Model Predictions</h1>
+            <p class="lead">Explore five different machine learning algorithms with practical applications</p>
+        </header>
+
+        <div class="models-nav mb-4">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="slr-tab" data-bs-toggle="tab" data-bs-target="#slr-tab-pane" type="button" role="tab">
+                        Simple Linear Regression
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mlr-tab" data-bs-toggle="tab" data-bs-target="#mlr-tab-pane" type="button" role="tab">
+                        Multiple Linear Regression
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="poly-tab" data-bs-toggle="tab" data-bs-target="#poly-tab-pane" type="button" role="tab">
+                        Polynomial Regression
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="knn-tab" data-bs-toggle="tab" data-bs-target="#knn-tab-pane" type="button" role="tab">
+                        K-Nearest Neighbors
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="logreg-tab" data-bs-toggle="tab" data-bs-target="#logreg-tab-pane" type="button" role="tab">
+                        Logistic Regression
+                    </button>
+                </li>
+            </ul>
         </div>
-    </header>
 
-    <main class="app-main">
-        <div class="container">
-            <!-- Model Selection -->
-            <div class="model-selector">
-                <div class="model-tabs">
-                    <button class="model-tab active" data-form="houseForm">
-                        <i class="fas fa-home"></i>
-                        <span>House Price</span>
-                    </button>
-                    <button class="model-tab" data-form="salaryForm">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <span>Salary</span>
-                    </button>
-                    <button class="model-tab" data-form="diabetesForm">
-                        <i class="fas fa-heartbeat"></i>
-                        <span>Diabetes</span>
-                    </button>
-                    <button class="model-tab" data-form="fruitForm">
-                        <i class="fas fa-apple-alt"></i>
-                        <span>Fruit</span>
-                    </button>
-                    <button class="model-tab" data-form="temperatureForm">
-                        <i class="fas fa-thermometer-half"></i>
-                        <span>Temperature</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Prediction Forms -->
-            <div class="prediction-container">
-                <!-- House Price Form -->
-                <div class="prediction-form active" id="houseForm">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>House Price Prediction</h3>
-                            <div class="alert alert-info">
-                                Model Accuracy: {{ house_accuracy }}
-                            </div>
-                            <form id="housePredictionForm">
-                                <div class="form-group mb-3">
-                                    <label for="sqft">Square Footage</label>
-                                    <input type="number" class="form-control" id="sqft" name="square_footage" min="100" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-calculator"></i> Predict Price
-                                </button>
-                            </form>
-                            <div id="houseResult" class="result-section" style="display: none;"></div>
-                        </div>
+        <div class="tab-content" id="myTabContent">
+            <!-- Simple Linear Regression -->
+            <div class="tab-pane fade show active" id="slr-tab-pane" role="tabpanel" tabindex="0">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>House Price Prediction</h3>
+                        <p class="mb-0">Simple Linear Regression Model</p>
                     </div>
-                </div>
-
-                <!-- Salary Form -->
-                <div class="prediction-form" id="salaryForm">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Employee Salary Prediction</h3>
-                            <div class="alert alert-info">
-                                Model Accuracy: {{ salary_accuracy }}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="house-price-form">
+                                    <div class="mb-3">
+                                        <label for="square_footage" class="form-label">Square Footage:</label>
+                                        <input type="number" class="form-control" id="square_footage" name="square_footage" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Predict Price</button>
+                                </form>
+                                <div class="mt-4" id="house-price-result"></div>
                             </div>
-                            <form id="salaryPredictionForm">
-                                <div class="form-group mb-3">
-                                    <label for="age">Age</label>
-                                    <input type="number" class="form-control" id="age" name="age" min="18" max="65" required>
+                            <div class="col-md-6">
+                                <div class="model-info">
+                                    <h4>About This Model</h4>
+                                    <p>This model predicts house prices based on square footage using Simple Linear Regression.</p>
+                                    <p>The model is trained to find the linear relationship between a house's size and its price.</p>
                                 </div>
-                                <div class="form-group mb-3">
-                                    <label for="years_experience">Years of Experience</label>
-                                    <input type="number" class="form-control" id="years_experience" name="years_experience" min="0" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="gender">Gender</label>
-                                    <select class="form-control" id="gender" name="gender" required>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="education_level">Education Level</label>
-                                    <select class="form-control" id="education_level" name="education_level" required>
-                                        <option value="High School">High School</option>
-                                        <option value="Bachelor's">Bachelor's</option>
-                                        <option value="Master's">Master's</option>
-                                        <option value="PhD">PhD</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="job_title">Job Title</label>
-                                    <input type="text" class="form-control" id="job_title" name="job_title" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-calculator"></i> Predict Salary
-                                </button>
-                            </form>
-                            <div id="salaryResult" class="result-section" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Diabetes Form -->
-                <div class="prediction-form" id="diabetesForm">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Diabetes Risk Prediction</h3>
-                            <div class="alert alert-info">
-                                Model Accuracy: {{ diabetes_accuracy }}
                             </div>
-                            <form id="diabetesPredictionForm">
-                                <div class="form-group mb-3">
-                                    <label for="gender_diabetes">Gender</label>
-                                    <select class="form-control" id="gender_diabetes" name="gender" required>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="age_diabetes">Age</label>
-                                    <input type="number" class="form-control" id="age_diabetes" name="age" min="0" max="120" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="hypertension">Hypertension</label>
-                                    <select class="form-control" id="hypertension" name="hypertension" required>
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="heart_disease">Heart Disease</label>
-                                    <select class="form-control" id="heart_disease" name="heart_disease" required>
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="smoking_history">Smoking History</label>
-                                    <select class="form-control" id="smoking_history" name="smoking_history" required>
-                                        <option value="never">Never</option>
-                                        <option value="former">Former</option>
-                                        <option value="current">Current</option>
-                                        <option value="not current">Not Current</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="bmi">BMI</label>
-                                    <input type="number" class="form-control" id="bmi" name="bmi" min="10" max="50" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="hba1c_level">HbA1c Level</label>
-                                    <input type="number" class="form-control" id="hba1c_level" name="hba1c_level" min="3" max="15" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="blood_glucose_level">Blood Glucose Level</label>
-                                    <input type="number" class="form-control" id="blood_glucose_level" name="blood_glucose_level" min="50" max="400" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-heartbeat"></i> Assess Diabetes Risk
-                                </button>
-                            </form>
-                            <div id="diabetesResult" class="result-section" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fruit Form -->
-                <div class="prediction-form" id="fruitForm">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Fruit Classification</h3>
-                            <div class="alert alert-info">
-                                Model Accuracy: {{ fruit_accuracy }}
-                            </div>
-                            <form id="fruitPredictionForm">
-                                <div class="form-group mb-3">
-                                    <label for="mass">Mass (grams)</label>
-                                    <input type="number" class="form-control" id="mass" name="mass" min="0" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="width">Width (cm)</label>
-                                    <input type="number" class="form-control" id="width" name="width" min="0" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="height">Height (cm)</label>
-                                    <input type="number" class="form-control" id="height" name="height" min="0" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="color_score">Color Score (0-1)</label>
-                                    <input type="number" class="form-control" id="color_score" name="color_score" min="0" max="1" step="0.01" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-apple-alt"></i> Classify Fruit
-                                </button>
-                            </form>
-                            <div id="fruitResult" class="result-section" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Temperature Form -->
-                <div class="prediction-form" id="temperatureForm">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Temperature Prediction</h3>
-                            <div class="alert alert-info">
-                                Model Accuracy: {{ temp_accuracy }}
-                            </div>
-                            <form id="temperaturePredictionForm">
-                                <div class="form-group mb-3">
-                                    <label for="day">Day of Month</label>
-                                    <input type="number" class="form-control" id="day" name="day" min="1" max="31" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="humidity">Humidity (%)</label>
-                                    <input type="number" class="form-control" id="humidity" name="humidity" min="0" max="100" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="wind_speed">Wind Speed (km/h)</label>
-                                    <input type="number" class="form-control" id="wind_speed" name="wind_speed" min="0" max="100" step="0.1" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="pressure">Atmospheric Pressure (hPa)</label>
-                                    <input type="number" class="form-control" id="pressure" name="pressure" min="900" max="1100" step="0.1" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-thermometer-half"></i> Predict Temperature
-                                </button>
-                            </form>
-                            <div id="temperatureResult" class="result-section" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <footer class="app-footer">
-        <div class="container">
-            <p>&copy; 2024 ML Prediction Dashboard. All rights reserved.</p>
+            <!-- Multiple Linear Regression -->
+            <div class="tab-pane fade" id="mlr-tab-pane" role="tabpanel" tabindex="0">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3>Employee Salary Prediction</h3>
+                        <p class="mb-0">Multiple Linear Regression Model</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="salary-form">
+                                    <div class="mb-3">
+                                        <label for="age" class="form-label">Age:</label>
+                                        <input type="number" class="form-control" id="age" name="age" required min="18" max="80">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="gender" class="form-label">Gender:</label>
+                                        <select class="form-select" id="gender" name="gender" required>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="education_level" class="form-label">Education Level:</label>
+                                        <select class="form-select" id="education_level" name="education_level" required>
+                                            <option value="Bachelor's">Bachelor's</option>
+                                            <option value="Master's">Master's</option>
+                                            <option value="PhD">PhD</option>
+                                            <option value="High School">High School</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="job_title" class="form-label">Job Title:</label>
+                                        <select class="form-select" id="job_title" name="job_title" required>
+                                            <option value="Software Engineer">Software Engineer</option>
+                                            <option value="Data Analyst">Data Analyst</option>
+                                            <option value="Senior Manager">Senior Manager</option>
+                                            <option value="Project Manager">Project Manager</option>
+                                            <option value="Sales Representative">Sales Representative</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="experience" class="form-label">Years of Experience:</label>
+                                        <input type="number" class="form-control" id="experience" name="experience" required min="0" max="50">
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Predict Salary</button>
+                                </form>
+                                <div class="mt-4" id="salary-result"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="model-info">
+                                    <h4>About This Model</h4>
+                                    <p>This model predicts employee salaries based on multiple factors using Multiple Linear Regression.</p>
+                                    <p>It accounts for factors like age, gender, education level, job title, and years of experience to provide a comprehensive salary estimate.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Polynomial Regression -->
+            <div class="tab-pane fade" id="poly-tab-pane" role="tabpanel" tabindex="0">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3>Temperature Prediction</h3>
+                        <p class="mb-0">Polynomial Regression Model</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="temperature-form">
+                                    <div class="mb-3">
+                                        <label for="apparent_temperature" class="form-label">Apparent Temperature (°C):</label>
+                                        <input type="number" step="0.1" class="form-control" id="apparent_temperature" name="apparent_temperature" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="humidity" class="form-label">Humidity (0-1):</label>
+                                        <input type="number" step="0.01" class="form-control" id="humidity" name="humidity" required min="0" max="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="wind_speed" class="form-label">Wind Speed (km/h):</label>
+                                        <input type="number" step="0.1" class="form-control" id="wind_speed" name="wind_speed" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="wind_bearing" class="form-label">Wind Bearing (degrees):</label>
+                                        <input type="number" class="form-control" id="wind_bearing" name="wind_bearing" required min="0" max="359">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="visibility" class="form-label">Visibility (km):</label>
+                                        <input type="number" step="0.1" class="form-control" id="visibility" name="visibility" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="cloud_cover" class="form-label">Cloud Cover (0-1):</label>
+                                        <input type="number" step="0.01" class="form-control" id="cloud_cover" name="cloud_cover" required min="0" max="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="pressure" class="form-label">Pressure (millibars):</label>
+                                        <input type="number" step="0.1" class="form-control" id="pressure" name="pressure" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="year" class="form-label">Year:</label>
+                                            <input type="number" class="form-control" id="year" name="year" required min="2000" max="2030">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="month" class="form-label">Month:</label>
+                                            <input type="number" class="form-control" id="month" name="month" required min="1" max="12">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="day" class="form-label">Day:</label>
+                                            <input type="number" class="form-control" id="day" name="day" required min="1" max="31">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="hour" class="form-label">Hour:</label>
+                                            <input type="number" class="form-control" id="hour" name="hour" required min="0" max="23">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="precip_type" class="form-label">Precipitation Type:</label>
+                                        <select class="form-select" id="precip_type" name="precip_type" required>
+                                            <option value="0">None</option>
+                                            <option value="1">Rain</option>
+                                            <option value="2">Snow</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-info">Predict Temperature</button>
+                                </form>
+                                <div class="mt-4" id="temperature-result"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="model-info">
+                                    <h4>About This Model</h4>
+                                    <p>This model predicts the actual temperature using Polynomial Regression.</p>
+                                    <p>Unlike linear models, polynomial regression can capture non-linear relationships between weather variables and temperature.</p>
+                                    <p>The model can identify complex patterns in weather data that simple linear models might miss.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- K-Nearest Neighbors -->
+            <div class="tab-pane fade" id="knn-tab-pane" role="tabpanel" tabindex="0">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h3>Fruit Classification</h3>
+                        <p class="mb-0">K-Nearest Neighbors Model</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="fruit-form">
+                                    <div class="mb-3">
+                                        <label for="mass" class="form-label">Mass (g):</label>
+                                        <input type="number" step="0.1" class="form-control" id="mass" name="mass" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="width" class="form-label">Width (cm):</label>
+                                        <input type="number" step="0.1" class="form-control" id="width" name="width" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="height" class="form-label">Height (cm):</label>
+                                        <input type="number" step="0.1" class="form-control" id="height" name="height" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="color_score" class="form-label">Color Score (0-1):</label>
+                                        <input type="number" step="0.01" class="form-control" id="color_score" name="color_score" required min="0" max="1">
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">Classify Fruit</button>
+                                </form>
+                                <div class="mt-4" id="fruit-result"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="model-info">
+                                    <h4>About This Model</h4>
+                                    <p>This model classifies fruits based on their physical characteristics using the K-Nearest Neighbors algorithm.</p>
+                                    <p>KNN is a non-parametric method that classifies new data points based on their similarity to known examples.</p>
+                                    <p>This model uses mass, width, height, and color to identify the fruit type.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logistic Regression -->
+            <div class="tab-pane fade" id="logreg-tab-pane" role="tabpanel" tabindex="0">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h3>Diabetes Prediction</h3>
+                        <p class="mb-0">Logistic Regression Model</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="diabetes-form">
+                                    <div class="mb-3">
+                                        <label for="gender" class="form-label">Gender:</label>
+                                        <select class="form-select" id="gender-diabetes" name="gender" required>
+                                            <option value="Female">Female</option>
+                                            <option value="Male">Male</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="age" class="form-label">Age:</label>
+                                        <input type="number" class="form-control" id="age-diabetes" name="age" required min="0" max="120">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="hypertension" class="form-label">Hypertension:</label>
+                                        <select class="form-select" id="hypertension" name="hypertension" required>
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="heart_disease" class="form-label">Heart Disease:</label>
+                                        <select class="form-select" id="heart_disease" name="heart_disease" required>
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="smoking_history" class="form-label">Smoking History:</label>
+                                        <select class="form-select" id="smoking_history" name="smoking_history" required>
+                                            <option value="never">Never</option>
+                                            <option value="former">Former</option>
+                                            <option value="current">Current</option>
+                                            <option value="No Info">No Info</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bmi" class="form-label">BMI:</label>
+                                        <input type="number" step="0.01" class="form-control" id="bmi" name="bmi" required min="10" max="50">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="hba1c" class="form-label">HbA1c Level:</label>
+                                        <input type="number" step="0.1" class="form-control" id="hba1c" name="hba1c" required min="3" max="9">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="glucose" class="form-label">Blood Glucose Level (mg/dL):</label>
+                                        <input type="number" class="form-control" id="glucose" name="glucose" required min="70" max="300">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">Predict Diabetes</button>
+                                </form>
+                                <div class="mt-4" id="diabetes-result"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="model-info">
+                                    <h4>About This Model</h4>
+                                    <p>This model predicts the likelihood of diabetes based on health metrics using Logistic Regression.</p>
+                                    <p>Logistic Regression is well-suited for binary classification problems like disease prediction.</p>
+                                    <p>The model considers various health factors to estimate the probability of a positive diabetes diagnosis.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5 bg-light">
+        <p>© 2025 Machine Learning Prediction System</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
