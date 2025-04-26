@@ -26,8 +26,10 @@ print("Fruit classes:", fruit_classes)
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
+# Split dataset - use stratify to ensure all classes appear in both train and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
+)
 
 # Train KNN model
 knn = KNeighborsClassifier(n_neighbors=3)
@@ -38,7 +40,14 @@ y_pred = knn.predict(X_test)
 
 # Evaluation
 print("Accuracy Score:", accuracy_score(y_test, y_pred))
-print("\nClassification Report:\n", classification_report(y_test, y_pred, target_names=label_encoder.classes_))
+
+# Get classes that are actually in the test set
+unique_labels = np.unique(np.concatenate([y_test, y_pred]))
+present_classes = [label_encoder.classes_[i] for i in unique_labels]
+
+print("\nClassification Report:\n", classification_report(y_test, y_pred, 
+                                                         labels=unique_labels,
+                                                         target_names=present_classes))
 
 # Save model and scaler
 joblib.dump(knn, "fruit_knn_model.pkl")

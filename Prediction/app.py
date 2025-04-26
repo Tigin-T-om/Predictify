@@ -121,7 +121,12 @@ def predict_temperature():
         month = int(request.form['month'])
         day = int(request.form['day'])
         hour = int(request.form['hour'])
-        precip_type = int(request.form['precip_type'])
+        
+        # Convert precipitation type from string to numeric
+        precip_type_str = request.form.get('precipitation_type', 'None')
+        # Map precipitation type to numeric value (adjust these values according to your model's training)
+        precip_type_map = {'None': 0, 'Rain': 1, 'Snow': 2}
+        precip_type = precip_type_map.get(precip_type_str, 0)
         
         # Create input array
         features = np.array([[
@@ -130,14 +135,22 @@ def predict_temperature():
             day, hour, precip_type
         ]])
         
-        # Predict using pipeline
-        prediction = models['temperature']['model'].predict(features)[0][0]
+        # Predict using model
+        prediction_result = models['temperature']['model'].predict(features)
+        
+        # Handle different possible return shapes
+        if hasattr(prediction_result, 'shape') and len(prediction_result.shape) > 1:
+            prediction = prediction_result[0][0]  # For 2D array
+        else:
+            prediction = float(prediction_result[0])  # For 1D array
         
         return jsonify({
             'success': True,
-            'prediction': f"{prediction:.2f}°C"
+            'prediction': f"{prediction:.2f}"
         })
     except Exception as e:
+        import traceback
+        traceback.print_exc()  # Print stack trace to server logs
         return jsonify({
             'success': False,
             'error': str(e)

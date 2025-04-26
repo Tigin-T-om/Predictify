@@ -6,39 +6,52 @@
     <title>Machine Learning Model Predictions</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
+    
 </head>
 <body>
     <div class="container">
+        <div class="theme-switch-wrapper">
+            <span class="label"><i class="fas fa-sun"></i></span>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+            <span class="label"><i class="fas fa-moon"></i></span>
+        </div>
         <header class="text-center my-4">
             <h1>Machine Learning Model Predictions</h1>
             <p class="lead">Explore five different machine learning algorithms with practical applications</p>
         </header>
 
         <div class="models-nav mb-4">
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="slr-tab" data-bs-toggle="tab" data-bs-target="#slr-tab-pane" type="button" role="tab">
-                        Simple Linear Regression
+                        <i class="fas fa-home"></i> Simple Linear Regression
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="mlr-tab" data-bs-toggle="tab" data-bs-target="#mlr-tab-pane" type="button" role="tab">
-                        Multiple Linear Regression
+                        <i class="fas fa-users"></i> Multiple Linear Regression
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="poly-tab" data-bs-toggle="tab" data-bs-target="#poly-tab-pane" type="button" role="tab">
-                        Polynomial Regression
+                        <i class="fas fa-cloud-sun"></i> Polynomial Regression
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="knn-tab" data-bs-toggle="tab" data-bs-target="#knn-tab-pane" type="button" role="tab">
-                        K-Nearest Neighbors
+                        <i class="fas fa-apple-alt"></i> K-Nearest Neighbors
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="logreg-tab" data-bs-toggle="tab" data-bs-target="#logreg-tab-pane" type="button" role="tab">
-                        Logistic Regression
+                        <i class="fas fa-heartbeat"></i> Logistic Regression
                     </button>
                 </li>
             </ul>
@@ -49,7 +62,7 @@
             <div class="tab-pane fade show active" id="slr-tab-pane" role="tabpanel" tabindex="0">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h3>House Price Prediction</h3>
+                        <h3>House Price Prediction </h3>
                         <p class="mb-0">Simple Linear Regression Model</p>
                     </div>
                     <div class="card-body">
@@ -60,13 +73,13 @@
                                         <label for="square_footage" class="form-label">Square Footage:</label>
                                         <input type="number" class="form-control" id="square_footage" name="square_footage" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Predict Price</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i>Predict Price</button>
                                 </form>
                                 <div class="mt-4" id="house-price-result"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="model-info">
-                                    <h4>About This Model</h4>
+                                    <h4><i class="fas fa-info-circle"></i>About This Model</h4>
                                     <p>This model predicts house prices based on square footage using Simple Linear Regression.</p>
                                     <p>The model is trained to find the linear relationship between a house's size and its price.</p>
                                 </div>
@@ -121,13 +134,13 @@
                                         <label for="experience" class="form-label">Years of Experience:</label>
                                         <input type="number" class="form-control" id="experience" name="experience" required min="0" max="50">
                                     </div>
-                                    <button type="submit" class="btn btn-success">Predict Salary</button>
+                                    <button type="submit" class="btn btn-success"><i class="fas fa-calculator"></i>Predict Salary</button>
                                 </form>
                                 <div class="mt-4" id="salary-result"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="model-info">
-                                    <h4>About This Model</h4>
+                                    <h4><i class="fas fa-info-circle"></i>About This Model</h4>
                                     <p>This model predicts employee salaries based on multiple factors using Multiple Linear Regression.</p>
                                     <p>It accounts for factors like age, gender, education level, job title, and years of experience to provide a comprehensive salary estimate.</p>
                                 </div>
@@ -202,13 +215,13 @@
                                             <option value="2">Snow</option>
                                         </select>
                                     </div>
-                                    <button type="submit" class="btn btn-info">Predict Temperature</button>
+                                    <button type="submit" class="btn btn-info"><i class="fas fa-calculator"></i>Predict Temperature</button>
                                 </form>
                                 <div class="mt-4" id="temperature-result"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="model-info">
-                                    <h4>About This Model</h4>
+                                    <h4><i class="fas fa-info-circle"></i>About This Model</h4>
                                     <p>This model predicts the actual temperature using Polynomial Regression.</p>
                                     <p>Unlike linear models, polynomial regression can capture non-linear relationships between weather variables and temperature.</p>
                                     <p>The model can identify complex patterns in weather data that simple linear models might miss.</p>
@@ -246,16 +259,79 @@
                                         <label for="color_score" class="form-label">Color Score (0-1):</label>
                                         <input type="number" step="0.01" class="form-control" id="color_score" name="color_score" required min="0" max="1">
                                     </div>
-                                    <button type="submit" class="btn btn-warning">Classify Fruit</button>
+                                    <button type="submit" class="btn btn-warning"><i class="fas fa-calculator"></i>Classify Fruit</button>
                                 </form>
                                 <div class="mt-4" id="fruit-result"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="model-info">
-                                    <h4>About This Model</h4>
+                                    <h4><i class="fas fa-info-circle"></i>About This Model</h4>
                                     <p>This model classifies fruits based on their physical characteristics using the K-Nearest Neighbors algorithm.</p>
                                     <p>KNN is a non-parametric method that classifies new data points based on their similarity to known examples.</p>
                                     <p>This model uses mass, width, height, and color to identify the fruit type.</p>
+                                    
+                                    <h5 class="mt-4">Color Score Reference</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Color Score Range</th>
+                                                    <th>Typical Color</th>
+                                                    <th>Example Fruits</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>0.14 - 0.21</td>
+                                                    <td>
+                                                        <div style="background-color: #2D4A22; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Dark Green/Black
+                                                    </td>
+                                                    <td>Avocado</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>0.22 - 0.45</td>
+                                                    <td>
+                                                        <div style="background-color: #4B0082; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Purple/Dark Blue
+                                                    </td>
+                                                    <td>Concord Grapes, Black Plums</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>0.46 - 0.60</td>
+                                                    <td>
+                                                        <div style="background-color: #6D8C3E; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Green
+                                                    </td>
+                                                    <td>Granny Smith Apples, Green Kiwi</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>0.61 - 0.75</td>
+                                                    <td>
+                                                        <div style="background-color: #FFA500; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Orange/Light Yellow
+                                                    </td>
+                                                    <td>Oranges, Golden Delicious Apples, Pears</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>0.76 - 0.84</td>
+                                                    <td>
+                                                        <div style="background-color: #FFD700; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Yellow/Gold
+                                                    </td>
+                                                    <td>Golden Kiwi, Bananas, Yellow Peaches</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>0.85 - 1.00</td>
+                                                    <td>
+                                                        <div style="background-color: #FF0000; width: 100%; height: 25px; border-radius: 4px;"></div>
+                                                        Red/Bright Red
+                                                    </td>
+                                                    <td>Strawberries, Red Apples, Pineapples</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -275,14 +351,14 @@
                             <div class="col-md-6">
                                 <form id="diabetes-form">
                                     <div class="mb-3">
-                                        <label for="gender" class="form-label">Gender:</label>
+                                        <label for="gender-diabetes" class="form-label">Gender:</label>
                                         <select class="form-select" id="gender-diabetes" name="gender" required>
                                             <option value="Female">Female</option>
                                             <option value="Male">Male</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="age" class="form-label">Age:</label>
+                                        <label for="age-diabetes" class="form-label">Age:</label>
                                         <input type="number" class="form-control" id="age-diabetes" name="age" required min="0" max="120">
                                     </div>
                                     <div class="mb-3">
@@ -320,13 +396,13 @@
                                         <label for="glucose" class="form-label">Blood Glucose Level (mg/dL):</label>
                                         <input type="number" class="form-control" id="glucose" name="glucose" required min="70" max="300">
                                     </div>
-                                    <button type="submit" class="btn btn-danger">Predict Diabetes</button>
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-calculator"></i>Predict Diabetes</button>
                                 </form>
                                 <div class="mt-4" id="diabetes-result"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="model-info">
-                                    <h4>About This Model</h4>
+                                    <h4><i class="fas fa-info-circle"></i>About This Model</h4>
                                     <p>This model predicts the likelihood of diabetes based on health metrics using Logistic Regression.</p>
                                     <p>Logistic Regression is well-suited for binary classification problems like disease prediction.</p>
                                     <p>The model considers various health factors to estimate the probability of a positive diabetes diagnosis.</p>
@@ -339,7 +415,7 @@
         </div>
     </div>
 
-    <footer class="text-center py-4 mt-5 bg-light">
+    <footer class="text-center py-4 mt-5">
         <p>© 2025 Machine Learning Prediction System</p>
     </footer>
 

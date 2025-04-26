@@ -254,3 +254,25 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('glucose').value = '120';
     }
 });
+
+
+// Theme toggle functionality
+const themeToggle = document.getElementById('theme-toggle');
+const body = document.body;
+
+// Check for saved user preference and set initial state
+if (localStorage.getItem('dark-mode') === 'true') {
+    body.classList.add('dark-mode');
+    themeToggle.checked = true;
+}
+
+// Listen for toggle changes
+themeToggle.addEventListener('change', function() {
+    if (this.checked) {
+        body.classList.add('dark-mode');
+        localStorage.setItem('dark-mode', 'true');
+    } else {
+        body.classList.remove('dark-mode');
+        localStorage.setItem('dark-mode', 'false');
+    }
+});
