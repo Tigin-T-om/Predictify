@@ -17,6 +17,9 @@
     --highlight-color: #0d6efd;
     --footer-bg: #343a40;
     --footer-text: #f8f9fa;
+    /* Light mode */
+    --scroll-track: #e0e0e0;
+    --scroll-thumb: #b0b0b0;
 }
 
 /* Dark Mode Variables */
@@ -37,6 +40,8 @@
     --highlight-color: #39b45c; /* Light green highlight in dark mode */
     --footer-bg: #000000;
     --footer-text: #e9ecef;
+    --scroll-track: #2c2c2c;
+    --scroll-thumb: #555555;
 }
 
 body {
@@ -141,9 +146,28 @@ h1 {
     display: flex;
     flex-wrap: nowrap;
     width: 100%;
-    overflow-x: auto;
+    overflow-x: auto;    /* allow horizontal scrolling */
+    overflow-y: hidden;  /* hide vertical scrollbar */
+    white-space: nowrap; /* prevent wrapping */
+    scrollbar-width: thin; /* Firefox scrollbar */
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track); /* for dark/light */
 }
 
+/* Chrome, Edge, and Safari */
+.nav-tabs::-webkit-scrollbar {
+    height: 6px; /* smaller horizontal scrollbar */
+}
+
+.nav-tabs::-webkit-scrollbar-track {
+    background: var(--scroll-track); /* track color */
+}
+
+.nav-tabs::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-thumb); /* thumb color */
+    border-radius: 10px;
+}
+
+/* Your original nav-item and nav-link styles */
 .nav-tabs .nav-item {
     flex: 1;
     text-align: center;
@@ -181,11 +205,12 @@ h1 {
     border-top: 3px solid #d1d5db;
 }
 
-/* Icon styling for tabs */
+/* Icon styling */
 .nav-tabs .nav-link i {
     margin-right: 8px;
     font-size: 1rem;
 }
+
 
 /* Card Styling */
 .card {
@@ -370,6 +395,50 @@ h1 {
     border-radius: 0.5rem !important;
     margin-bottom: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode table fixes for the color score reference table */
+.dark-mode .table {
+    border-color: var(--border-color);
+}
+
+.dark-mode .table th {
+    color: var(--text-color);
+    background-color: var(--table-header-bg);
+    border-color: var(--border-color);
+}
+
+.dark-mode .table td {
+    border-color: var(--border-color);
+}
+
+/* Ensure text is visible in dark mode for the table headings */
+.dark-mode #knn-tab-pane .table th {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* Improve contrast for table cell content in dark mode */
+.dark-mode #knn-tab-pane .table td {
+    color: var(--text-color);
+}
+
+/* Add a subtle border to color boxes to make them stand out in dark mode */
+.dark-mode .table td div[style^="background-color"] {
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+/* Enhance the table border in dark mode for better visibility */
+.dark-mode #knn-tab-pane .table {
+    border: 1px solid var(--border-color);
+}
+
+/* Improve the table's appearance in dark mode */
+.dark-mode #knn-tab-pane .table-responsive {
+    background-color: var(--card-bg);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
 }
 
 /* Results Styling */
@@ -635,4 +704,3 @@ footer p {
         margin-right: 5px;
     }
 }
-
