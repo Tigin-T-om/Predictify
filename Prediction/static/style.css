@@ -13,10 +13,11 @@
     --model-info-bg: #f8f9fa;
     --model-info-border: #dee2e6;
     --table-header-bg: #f1f3f5;
+    --table-bg: #ffffff; /* Added table background variable */
     --result-bg: #f8f9fa;
     --highlight-color: #0d6efd;
-    --footer-bg: #343a40;
-    --footer-text: #f8f9fa;
+    --footer-bg: #f2f4f6;
+    --footer-text: #212529;
     /* Light mode */
     --scroll-track: #e0e0e0;
     --scroll-thumb: #b0b0b0;
@@ -36,6 +37,7 @@
     --model-info-bg: #2d2d2d;
     --model-info-border: #4ade80; /* Light green border in dark mode */
     --table-header-bg: #2d2d2d;
+    --table-bg: #2d2d2d; /* Added table background for dark mode */
     --result-bg: #2d2d2d;
     --highlight-color: #39b45c; /* Light green highlight in dark mode */
     --footer-bg: #000000;
@@ -369,24 +371,43 @@ h1 {
     font-weight: 600;
 }
 
-/* Table styling */
+/* Table styling - FIXED for dark mode */
 .table {
     margin-bottom: 0;
     border-radius: 0.5rem;
     overflow: hidden;
     color: var(--text-color);
+    background-color: var(--table-bg); /* Use variable for background */
+    border-color: var(--border-color);
+}
+
+.table thead {
+    background-color: var(--table-header-bg);
 }
 
 .table th {
     background-color: var(--table-header-bg);
     font-weight: 600;
     padding: 0.75rem;
+    color: var(--text-color);
+    border-color: var(--border-color);
 }
 
 .table td {
     padding: 0.75rem;
     vertical-align: middle;
     border-color: var(--border-color);
+    background-color: var(--table-bg); /* Apply background to cells */
+    color: var(--text-color)
+}
+
+.table-bordered {
+    border: 1px solid var(--border-color);
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid var(--border-color);
 }
 
 /* Color boxes in color reference table */
@@ -397,48 +418,38 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode table fixes for the color score reference table */
+/* Dark mode table specific fixes */
 .dark-mode .table {
     border-color: var(--border-color);
+    background-color: var(--table-bg);
 }
 
+.dark-mode .table-responsive {
+    background-color: var(--card-bg);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
+
+.dark-mode .table-bordered,
+.dark-mode .table-bordered th,
+.dark-mode .table-bordered td {
+    border-color: var(--border-color);
+}
+
+/* Ensure all cells get the dark background in dark mode */
+.dark-mode .table tbody tr td {
+    background-color: var(--table-bg);
+}
+
+.dark-mode .table td,
 .dark-mode .table th {
-    color: var(--text-color);
-    background-color: var(--table-header-bg);
-    border-color: var(--border-color);
-}
-
-.dark-mode .table td {
-    border-color: var(--border-color);
-}
-
-/* Ensure text is visible in dark mode for the table headings */
-.dark-mode #knn-tab-pane .table th {
-    color: var(--text-color);
-    font-weight: 600;
-}
-
-/* Improve contrast for table cell content in dark mode */
-.dark-mode #knn-tab-pane .table td {
-    color: var(--text-color);
+    color: #f0f0f0; /* Or use a lighter CSS variable */
 }
 
 /* Add a subtle border to color boxes to make them stand out in dark mode */
 .dark-mode .table td div[style^="background-color"] {
     box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
     border: 1px solid var(--border-color);
-}
-
-/* Enhance the table border in dark mode for better visibility */
-.dark-mode #knn-tab-pane .table {
-    border: 1px solid var(--border-color);
-}
-
-/* Improve the table's appearance in dark mode */
-.dark-mode #knn-tab-pane .table-responsive {
-    background-color: var(--card-bg);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
 }
 
 /* Results Styling */
